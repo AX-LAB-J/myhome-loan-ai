@@ -17,7 +17,7 @@ export default function Drawer({ customerLabel, customer, query, onQuery, option
       <div className="menu-card">
         <strong>{customerLabel}</strong>
         <span>{customer ? (customer.customer.is_home_owner ? '주택 보유' : '무주택') : '제공 CSV 고객'}</span>
-        <label>사용자 바꾸기<input type="search" inputMode="numeric" placeholder="고객 ID 또는 이름 검색" value={query} onChange={e => onQuery(e.target.value)} /></label>
+        <label>사용자 바꾸기<input type="search" enterKeyHint="search" autoComplete="off" placeholder="고객 ID 또는 이름 검색" value={query} onChange={e => onQuery(e.target.value)} /></label>
         <div className="customer-options">{options.map(c => <button key={c.customer_id} onClick={() => onPick(c.customer_id)}>
           고객 {c.display_name ? `${c.display_name} · ` : ''}{c.customer_id} · {c.age}세 · {c.household_size}인 가구
         </button>)}</div>
