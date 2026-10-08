@@ -81,12 +81,16 @@ export default function App() {
   const requestVersion = useRef(0)
   const customerVersion = useRef(0)
   const chatVersion = useRef(0)
+  const scrollAfterUnlock = useRef<number | null>(null)
   // Home's '+1%p' switch recalculates every screen at the stressed rate without saving it.
   const calcBuyer = useMemo(() => stress ? { ...buyer, mortgage_rate: rateLabel(buyer.mortgage_rate + 1) } : buyer, [buyer, stress])
   const updateDraft = <K extends keyof Buyer>(key: K, value: Buyer[K]) => setDraft(current => ({ ...current, [key]: value }))
   const customerLabel = customerId == null ? '고객을 선택하세요' : `${customer?.customer.name ?? '고객'} · 고객 ID ${customerId}`
 
-  const go = (next: Screen) => { setMenu(false); setScreen(next); window.scrollTo(0, 0); menuButton.current?.focus() }
+  const go = (next: Screen) => {
+    if (menu || chat) scrollAfterUnlock.current = 0
+    setMenu(false); setScreen(next); window.scrollTo(0, 0); menuButton.current?.focus()
+  }
   const closeMenu = () => { setMenu(false); menuButton.current?.focus() }
   const startNewChat = () => {
     chatVersion.current += 1
@@ -164,12 +168,25 @@ export default function App() {
     return () => { active = false }
   }, [mapView, screen, buyer.sido, buyer.sigungu, meta, explore, plan, range, customerId])
 
+  // Freeze the page behind the menu/chat. iOS Safari ignores overflow:hidden on body, so pin
+  // the body in place and restore the scroll position (or the new screen's top) afterwards.
+  const overlayOpen = menu || chat
   useEffect(() => {
-    document.body.style.overflow = menu || chat ? 'hidden' : ''
+    if (!overlayOpen) return
+    const y = window.scrollY
+    const body = document.body.style
+    Object.assign(body, { position: 'fixed', top: `-${y}px`, left: '0', right: '0', overflow: 'hidden' })
+    return () => {
+      Object.assign(body, { position: '', top: '', left: '', right: '', overflow: '' })
+      window.scrollTo(0, scrollAfterUnlock.current ?? y)
+      scrollAfterUnlock.current = null
+    }
+  }, [overlayOpen])
+  useEffect(() => {
     const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') { setMenu(false); setChat(false) } }
     document.addEventListener('keydown', escape)
-    return () => { document.body.style.overflow = ''; document.removeEventListener('keydown', escape) }
-  }, [menu, chat])
+    return () => document.removeEventListener('keydown', escape)
+  }, [])
 
   const save = async () => {
     setSaving(true); setError('')
@@ -241,10 +258,11 @@ export default function App() {
         {screen === 'connections' && <ConnectionsScreen customerId={customerId} customer={customer} onFinance={() => go('finance')} />}
         {screen !== 'connections' && <>
           <p className="mobile-disclaimer">제공 CSV와 학습 모델 기반 참고 계산이며 실제 매물이나 대출 승인을 보장하지 않아요.</p>
-          <form className="mobile-chat-entry" onSubmit={e => { e.preventDefault(); setChat(true); if (chatText.trim()) void send() }}>
-            <input aria-label="채팅 질문" placeholder="조건을 말로 바꿔 보세요" value={chatText} onChange={e => setChatText(e.target.value)} onFocus={() => setChat(true)} />
-            <button aria-label="채팅 열기 또는 전송" type="submit"><Send size={18} /></button>
-          </form>
+          {/* A button, not an input: the keyboard should open once, inside the chat sheet. */}
+          <div className="mobile-chat-entry">
+            <button type="button" className="chat-entry-open" onClick={() => setChat(true)}>{chatText || '조건을 말로 바꿔 보세요'}</button>
+            <button type="button" aria-label="채팅 열기" onClick={() => setChat(true)}><Send size={18} /></button>
+          </div>
         </>}
       </>}
     </main>

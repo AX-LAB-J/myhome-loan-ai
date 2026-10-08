@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Send, X } from 'lucide-react'
 import type { Message, Trade } from '../api'
 import { ChatRecommendation } from './ui'
@@ -8,7 +9,27 @@ export default function ChatSheet({ messages, busy, text, onText, onSend, onRese
   messages: Message[]; busy: boolean; text: string; onText: (text: string) => void; onSend: () => void
   onReset: () => void; onClose: () => void; onOpenTrade: (trade: Trade) => void; onShowResults: () => void
 }) {
-  return <div className="overlay chat-overlay" onClick={onClose}>
+  const overlay = useRef<HTMLDivElement>(null)
+  const body = useRef<HTMLDivElement>(null)
+  // iOS keeps the layout viewport full height when the keyboard opens; follow the visible
+  // area instead so the sheet sits right above the keyboard instead of sliding under it.
+  useEffect(() => {
+    const view = window.visualViewport
+    const el = overlay.current
+    if (!view || !el) return
+    const fit = () => { el.style.top = `${view.offsetTop}px`; el.style.height = `${view.height}px`; el.style.bottom = 'auto' }
+    fit()
+    view.addEventListener('resize', fit)
+    view.addEventListener('scroll', fit)
+    return () => { view.removeEventListener('resize', fit); view.removeEventListener('scroll', fit) }
+  }, [])
+  // Keep the newest message (or the "thinking" line) in view.
+  const first = useRef(true)
+  useEffect(() => {
+    body.current?.scrollTo({ top: body.current.scrollHeight, behavior: first.current ? 'auto' : 'smooth' })
+    first.current = false
+  }, [messages.length, busy])
+  return <div className="overlay chat-overlay" ref={overlay} onClick={onClose}>
     <section className="chat-sheet" role="dialog" aria-modal="true" aria-label="조건을 말로 바꿔 보세요" onClick={e => e.stopPropagation()}>
       <div className="sheet-handle" />
       <div className="title-row">
@@ -16,7 +37,7 @@ export default function ChatSheet({ messages, busy, text, onText, onSend, onRese
         <button className="text-link" onClick={onReset}>새로 시작</button>
         <button className="plain-icon" aria-label="채팅 닫기" onClick={onClose}><X /></button>
       </div>
-      <div className="chat-body">
+      <div className="chat-body" ref={body}>
         {messages.length === 0 && <p className="hint">아파트와 자금 조건을 물어보세요. 금액은 계산기가 계산해요.</p>}
         {messages.map((m, i) => <div key={i} className="chat-message">
           <p className={'chat-bubble ' + m.role}>{m.content}</p>
