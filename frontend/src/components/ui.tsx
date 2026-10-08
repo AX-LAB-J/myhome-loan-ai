@@ -1,5 +1,5 @@
 // Small presentational pieces reused across screens.
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import type { Bands, Trade } from '../api'
 import { boundaryMoney, hasPriceRange, money } from '../format'
 
@@ -7,24 +7,72 @@ export function Row({ label, value, total = false }: { label: ReactNode; value: 
   return <div className={total ? 'amount-row total' : 'amount-row'}><span>{label}</span><b>{value}</b></div>
 }
 
+const LABEL_GAP = 6   // px between neighbouring labels on one line
+const LABEL_LINE = 15 // px per label line
+
+type Tick = { value: number; label: string; name: string }
+type Placement = { left: number; row: number }
+
+/** Put each label under its tick; a label that would touch the previous one on a line
+ * drops to the next line, and labels are kept inside the bar's width. */
+function placeLabels(box: HTMLElement, ticks: Tick[], total: number): Placement[] {
+  const width = box.clientWidth
+  const lineEnds: number[] = []
+  return Array.from(box.children as HTMLCollectionOf<HTMLElement>).map((span, i) => {
+    const w = span.offsetWidth
+    const center = ticks[i].value / total * width
+    const left = i === 0 ? 0 : Math.min(Math.max(center - w / 2, 0), Math.max(0, width - w))
+    let row = lineEnds.findIndex(end => left >= end + LABEL_GAP)
+    if (row === -1) { row = lineEnds.length; lineEnds.push(0) }
+    lineEnds[row] = left + w
+    return { left, row }
+  })
+}
+
 export function BandBar({ price, bands }: { price?: number; bands: Bands }) {
   const total = Math.max(bands.maximum * 1.12, price ?? 0, 1)
   const at = (value: number) => `${value / total * 100}%`
-  const ticks = [
+  const ticks: Tick[] = [
     { value: 0, label: '0', name: '시작' },
     ...(hasPriceRange(0, bands.safe) ? [{ value: bands.safe, label: boundaryMoney(bands.safe), name: '안정권 상한' }] : []),
     ...(hasPriceRange(bands.safe, bands.possible) ? [{ value: bands.possible, label: boundaryMoney(bands.possible, bands.possible - bands.safe < 1_000_000), name: '가능권 상한' }] : []),
     ...(hasPriceRange(bands.possible, bands.maximum) ? [{ value: bands.maximum, label: boundaryMoney(bands.maximum, bands.maximum - bands.possible < 1_000_000), name: '한계권 상한' }] : []),
   ]
+  const tickKey = ticks.map(t => `${t.value}:${t.label}`).join('|')
+  const endsRef = useRef<HTMLDivElement>(null)
+  const [placement, setPlacement] = useState<Placement[] | null>(null)
+  useLayoutEffect(() => {
+    const box = endsRef.current
+    if (!box) return
+    const update = () => setPlacement(current => {
+      const next = placeLabels(box, ticks, total)
+      return JSON.stringify(next) === JSON.stringify(current) ? current : next
+    })
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(box)
+    return () => observer.disconnect()
+    // ticks/total are fully described by tickKey
+  }, [tickKey, total])
+  const lines = placement ? Math.max(...placement.map(p => p.row)) + 1 : 1
   return <div className="band-wrap">
     <div className="band-bar">
       <i className="safe" style={{ width: at(bands.safe) }} />
       <i className="possible" style={{ width: at(Math.max(0, bands.possible - bands.safe)) }} />
       <i className="limit" style={{ width: at(Math.max(0, bands.maximum - bands.possible)) }} />
       <i className="outside" style={{ flex: 1 }} />
+      {ticks.slice(1).map(tick => <b key={tick.name} className="band-tick" style={{ left: at(tick.value) }} />)}
       {price != null && <span className="band-pointer" style={{ left: `${Math.min(100, price / total * 100)}%` }}>▼</span>}
     </div>
-    <div className="band-ends">{ticks.map(tick => <span key={tick.name} title={tick.name} style={{ left: at(tick.value) }}>{tick.label}</span>)}</div>
+    <div className="band-ends" ref={endsRef} style={{ height: lines * LABEL_LINE }}>
+      {ticks.map((tick, i) => {
+        const spot = placement?.[i]
+        const style = spot
+          ? { left: spot.left, top: spot.row * LABEL_LINE, transform: 'none' }
+          : { left: at(tick.value), visibility: 'hidden' as const }
+        return <span key={tick.name} title={tick.name} className={spot && spot.row > 0 ? 'lower' : undefined} style={style}>{tick.label}</span>
+      })}
+    </div>
   </div>
 }
 

@@ -27,7 +27,7 @@ export default function HomeScreen({ buyer, calcBuyer, plan, pattern, customer, 
     </div></section>}
     <section className="mobile-card">
       <h2>매달 남는 돈 <small>안정권 상단 기준</small></h2>
-      <Row label="월 소득 · 연소득÷12" value={money(buyer.income / 12)} />
+      <Row label="월 소득" value={money(buyer.income / 12)} />
       <Row label="월 총지출" value={<>− {money(buyer.consumption)}</>} />
       <Row label="기존 대출 상환" value={<>− {money(buyer.existing_payment)}</>} />
       <Row label="예상 월 상환" value={<>− {money(plan?.safe_plan?.payment)}</>} />

@@ -11,3 +11,5 @@
 .mobile-header>.header-home{margin-left:0}.mobile-header>strong{flex:1}.mobile-header>.header-menu{margin-right:-4px}.overlay>.drawer{margin-left:auto}.mobile-header .view-tabs{margin-left:0}
 .band-ends{position:relative;display:block;height:18px}.band-ends span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}.band-ends span:first-child{transform:none}
 
+
+.band-tick{position:absolute;top:-2px;bottom:-2px;width:2px;margin-left:-1px;background:#fff;border-radius:1px;pointer-events:none}.band-ends span.lower::before{content:'';position:absolute;left:50%;top:-6px;height:5px;border-left:1px solid #c4cdd8}

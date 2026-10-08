@@ -7,8 +7,8 @@ import { band, bandLabels, boundaryMoney, money, rangeCap, tierCap, withinRange,
 
 const AREA_CHOICES = [59, 84, 99, 114]
 const YEAR_CHOICES = Array.from({ length: 9 }, (_, i) => 2026 - i)
-const LIST_TABS: Range[] = ['all', 'possible', 'safe', 'limit']
-const MAP_TABS = ['possible', 'safe', 'limit'] as const
+// Each band tab shows every complex up to that band's ceiling.
+const RANGE_TABS: Range[] = ['all', 'safe', 'possible', 'limit']
 
 export type Sort = 'low' | 'new'
 
@@ -65,7 +65,7 @@ export default function ExploreScreen(props: {
       </select></label>
     </div>
     {!props.mapView ? <>
-      <div className="range-tabs">{LIST_TABS.map(v => <button key={v} className={range === v ? 'active' : ''} onClick={() => props.onRange(v)}>{v === 'all' ? '전체' : v === 'safe' ? bandLabels[v] : bandLabels[v] + '까지'}</button>)}</div>
+      <div className="range-tabs">{RANGE_TABS.map(v => <button key={v} className={range === v ? 'active' : ''} onClick={() => props.onRange(v)}>{v === 'all' ? '전체' : bandLabels[v]}</button>)}</div>
       <div className="title-row results"><b>단지 {rows.length}곳</b><select aria-label="정렬" value={sort} onChange={e => props.onSort(e.target.value as Sort)}><option value="low">가격 낮은 순</option><option value="new">최근 거래 순</option></select></div>
       {rows.length ? rows.map(row => {
         const name = band(row.purchase_reference_price, bands)
@@ -79,8 +79,7 @@ export default function ExploreScreen(props: {
       }) : <div className="mobile-card empty">{emptyMessage}</div>}
     </> : <>
       <div className="map-range">
-        <button className={range === 'all' ? 'active' : ''} onClick={() => props.onRange('all')}>전체</button>
-        {MAP_TABS.map(v => <button key={v} className={range === v ? 'active' : ''} onClick={() => props.onRange(v)}>{bandLabels[v]}까지</button>)}
+        {RANGE_TABS.map(v => <button key={v} className={range === v ? 'active' : ''} onClick={() => props.onRange(v)}>{v === 'all' ? '전체' : bandLabels[v]}</button>)}
       </div>
       <NaverMap clientId={props.naverClientId} markers={visibleMarkers} onSelect={props.onMapSelect} />
       {props.mapError && <p className="hint">지도 좌표를 불러오지 못했습니다: {props.mapError}</p>}
