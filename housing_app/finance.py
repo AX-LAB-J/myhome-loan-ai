@@ -85,12 +85,18 @@ def financing(buyer, price, *, enforce_price_cap=True, loan_basis=None):
     available = max(0, buyer.assets + buyer.other_funds - buyer.reserve)
     costs = price * buyer.cost_rate
     need = max(0, price + costs - available)
-    mortgage_ratio = buyer.ltv_cap if buyer.model_mortgage_ratio is None else min(buyer.ltv_cap, buyer.model_mortgage_ratio)
-    credit_ratio = buyer.credit_cap_ratio if buyer.model_credit_ratio is None else min(buyer.credit_cap_ratio, buyer.model_credit_ratio)
-    mortgage = min(need, price * mortgage_ratio)
-    credit = (
-        min(max(0, need - mortgage), price * credit_ratio) if buyer.allow_credit else 0
+    mortgage_ratio = (
+        buyer.ltv_cap
+        if buyer.model_mortgage_ratio is None
+        else min(buyer.ltv_cap, buyer.model_mortgage_ratio)
     )
+    credit_ratio = (
+        buyer.credit_cap_ratio
+        if buyer.model_credit_ratio is None
+        else min(buyer.credit_cap_ratio, buyer.model_credit_ratio)
+    )
+    mortgage = min(need, price * mortgage_ratio)
+    credit = min(max(0, need - mortgage), price * credit_ratio) if buyer.allow_credit else 0
     shortfall = max(0, need - mortgage - credit)
     payment = float(
         monthly_mortgage(mortgage, buyer.mortgage_rate, buyer.term)
@@ -115,7 +121,8 @@ def financing(buyer, price, *, enforce_price_cap=True, loan_basis=None):
         mortgage=mortgage,
         credit=credit,
         loan=mortgage + credit,
-        loan_basis=loan_basis or ("trained_model" if buyer.model_mortgage_ratio is not None else "assumption"),
+        loan_basis=loan_basis
+        or ("trained_model" if buyer.model_mortgage_ratio is not None else "assumption"),
         model_mortgage_ratio=buyer.model_mortgage_ratio,
         model_credit_ratio=buyer.model_credit_ratio if buyer.allow_credit else None,
         shortfall=shortfall,
@@ -180,8 +187,11 @@ def affordability_bands(buyer):
         ceiling = max(buyer.price, 1.0)
         for _ in range(40):
             check = financing(scenario_buyer, ceiling, enforce_price_cap=False)
-            if (check["shortfall"] > 0.01 or check["dsr"] > scenario_buyer.dsr_cap
-                    or check["surplus"] < required_surplus):
+            if (
+                check["shortfall"] > 0.01
+                or check["dsr"] > scenario_buyer.dsr_cap
+                or check["surplus"] < required_surplus
+            ):
                 break
             ceiling *= 2
         else:

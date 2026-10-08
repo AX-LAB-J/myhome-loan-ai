@@ -2,25 +2,40 @@
 
 from fastapi.testclient import TestClient
 
+import pytest
+
 from housing_app.api import app
 from housing_app import api as housing_api
+from housing_app.settings import get_settings
+
+pytestmark = pytest.mark.data
 
 
 def test_complete_customer_profiles_are_searchable_and_joined():
     client = TestClient(app)
-    for customer_id, name in ((68729, "신지우"), (77193, "황예준"),
-                              (6507, "황윤서"), (2098, "송민준")):
+    for customer_id, name in (
+        (68729, "신지우"),
+        (77193, "황예준"),
+        (6507, "황윤서"),
+        (2098, "송민준"),
+    ):
         by_id = client.get("/api/demo-customers", params={"q": str(customer_id)}).json()
         by_name = client.get("/api/demo-customers", params={"q": name}).json()
-        assert any(row["customer_id"] == customer_id and row["display_name"] == name
-                   for row in by_id)
+        assert any(
+            row["customer_id"] == customer_id and row["display_name"] == name for row in by_id
+        )
         assert any(row["customer_id"] == customer_id for row in by_name)
         detail = client.get(f"/api/demo-customers/{customer_id}").json()
         assert detail["customer"]["name"] == name
         assert detail["customer"]["consumption_source"] == "budget"
         assert len(detail["accounts"]) == 2
-        assert abs(detail["customer"]["account_balance_total"]
-                   - sum(account["balance"] for account in detail["accounts"])) < 0.01
+        assert (
+            abs(
+                detail["customer"]["account_balance_total"]
+                - sum(account["balance"] for account in detail["accounts"])
+            )
+            < 0.01
+        )
         assert detail["property"] is None
     purchaser = client.get("/api/demo-customers/1").json()
     assert purchaser["customer"]["consumption_source"] == "observed"
@@ -100,19 +115,24 @@ def test_seodaemun_recommendations_use_affordability_not_past_purchase_price():
     customer = client.get("/api/demo-customers/13").json()["customer"]
     buyer = meta["defaults"]
     buyer.update(
-        age=customer["age"], income=customer["household_annual_income"],
+        age=customer["age"],
+        income=customer["household_annual_income"],
         assets=customer["financial_assets_estimated"],
         consumption=customer["avg_monthly_consumption"],
         existing_payment=customer["monthly_debt_service"],
-        price=customer["purchase_reference_price"], area=customer["exclusive_area_m2"],
-        sido="서울특별시", sigungu="서대문구",
+        price=customer["purchase_reference_price"],
+        area=customer["exclusive_area_m2"],
+        sido="서울특별시",
+        sigungu="서대문구",
     )
     bands = client.post("/api/plan", json=buyer).json()["bands"]
     result = client.post("/api/recommendations", json=buyer).json()
     assert result["status"] == "MATCHES"
     assert len(result["candidates"]) == 3
-    assert all(buyer["price"] < row["purchase_reference_price"] <= bands["possible"]
-               for row in result["candidates"])
+    assert all(
+        buyer["price"] < row["purchase_reference_price"] <= bands["possible"]
+        for row in result["candidates"]
+    )
     assert all(row["plan"]["eligible"] for row in result["candidates"])
 
 
@@ -122,7 +142,9 @@ def test_map_selection_uses_exact_visible_complexes(monkeypatch):
     repo = housing_api.repository()
     all_trades = repo.trades("서울특별시", "성동구").drop_duplicates("complex_id")
     selected = all_trades.iloc[-1].complex_id
-    monkeypatch.setattr(housing_api, "Settings", lambda: SimpleNamespace(naver_maps_client_id="test"))
+    monkeypatch.setattr(
+        housing_api, "get_settings", lambda: SimpleNamespace(naver_maps_client_id="test")
+    )
     monkeypatch.setattr(housing_api, "cached_markers", lambda rows, settings, resolve: (rows, []))
     response = TestClient(app).post(
         "/api/map/resolve?sido=서울특별시&sigungu=성동구",
@@ -135,7 +157,9 @@ def test_map_selection_uses_exact_visible_complexes(monkeypatch):
 def test_customer_home_remains_on_map_when_band_has_no_complexes(monkeypatch):
     from types import SimpleNamespace
 
-    monkeypatch.setattr(housing_api, "Settings", lambda: SimpleNamespace(naver_maps_client_id="test"))
+    monkeypatch.setattr(
+        housing_api, "get_settings", lambda: SimpleNamespace(naver_maps_client_id="test")
+    )
     monkeypatch.setattr(housing_api, "cached_markers", lambda rows, settings, resolve: (rows, []))
     response = TestClient(app).post(
         "/api/map/resolve?sido=서울특별시&sigungu=강동구",
@@ -165,6 +189,7 @@ def test_chat_route_uses_existing_agent_without_live_api(monkeypatch, tmp_path):
     monkeypatch.setenv("OPENAI_API_KEY", "test-only")
     monkeypatch.setenv("CHAT_CHECKPOINT_PATH", str(tmp_path / "chat.sqlite"))
     monkeypatch.setattr(llm_advisor, "chat_async", fake_chat)
+    get_settings.cache_clear()
     client = TestClient(app)
     buyer = client.get("/api/meta").json()["defaults"]
     response = client.post(
@@ -210,6 +235,7 @@ def test_delete_chat_removes_checkpoint(monkeypatch, tmp_path):
 
     assert asyncio.run(seed_and_read(True)) is not None
     monkeypatch.setenv("CHAT_CHECKPOINT_PATH", str(path))
+    get_settings.cache_clear()
     response = TestClient(app).delete(f"/api/chat/{thread_id}")
     assert response.status_code == 200
     assert asyncio.run(seed_and_read(False)) is None
@@ -245,6 +271,7 @@ def test_failed_chat_discards_old_checkpoint(monkeypatch, tmp_path):
     monkeypatch.setenv("CHAT_CHECKPOINT_PATH", str(path))
     monkeypatch.setenv("OPENAI_API_KEY", "test-only")
     monkeypatch.setattr(llm_advisor, "chat_async", fail_chat)
+    get_settings.cache_clear()
     client = TestClient(app)
     buyer = client.get("/api/meta").json()["defaults"]
     response = client.post(

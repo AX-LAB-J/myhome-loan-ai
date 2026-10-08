@@ -4,6 +4,8 @@ from fastapi.testclient import TestClient
 from housing_app.api import app
 from housing_app.housing_repository import HousingRepository
 
+pytestmark = pytest.mark.data
+
 
 client = TestClient(app)
 
@@ -40,12 +42,15 @@ def test_customer_three_bands_use_distinct_stable_possible_and_limit_scenarios()
     customer = client.get("/api/demo-customers/3").json()["customer"]
     buyer = client.get("/api/meta").json()["defaults"]
     buyer.update(
-        age=customer["age"], income=customer["household_annual_income"],
+        age=customer["age"],
+        income=customer["household_annual_income"],
         assets=customer["financial_assets_estimated"],
         consumption=customer["avg_monthly_consumption"],
         existing_payment=customer["monthly_debt_service"],
-        price=customer["purchase_reference_price"], area=customer["exclusive_area_m2"],
-        sido=customer["sido"], sigungu=customer["sigungu"],
+        price=customer["purchase_reference_price"],
+        area=customer["exclusive_area_m2"],
+        sido=customer["sido"],
+        sigungu=customer["sigungu"],
     )
     result = client.post("/api/plan", json=buyer).json()
     bands = result["bands"]
@@ -58,7 +63,11 @@ def test_customer_three_bands_use_distinct_stable_possible_and_limit_scenarios()
     assert result["safe_plan"]["surplus"] > buyer["target_surplus"]
     assert result["safe_plan"]["dsr"] <= result["band_assumptions"]["safe_dsr_cap"] + 1e-12
     exploration = client.post("/api/explore", json=buyer).json()
-    limit_rows = [row for row in exploration["rows"] if bands["possible"] < row["purchase_reference_price"] <= bands["maximum"]]
+    limit_rows = [
+        row
+        for row in exploration["rows"]
+        if bands["possible"] < row["purchase_reference_price"] <= bands["maximum"]
+    ]
     assert limit_rows
     assert all(row["plan"]["loan_basis"] == "limit_scenario" for row in limit_rows)
 
@@ -67,12 +76,15 @@ def test_customer_thirteen_seven_point_two_billion_is_possible_not_stable():
     customer = client.get("/api/demo-customers/13").json()["customer"]
     buyer = client.get("/api/meta").json()["defaults"]
     buyer.update(
-        age=customer["age"], income=customer["household_annual_income"],
+        age=customer["age"],
+        income=customer["household_annual_income"],
         assets=customer["financial_assets_estimated"],
         consumption=customer["avg_monthly_consumption"],
         existing_payment=customer["monthly_debt_service"],
-        price=customer["purchase_reference_price"], area=customer["exclusive_area_m2"],
-        sido=customer["sido"], sigungu=customer["sigungu"],
+        price=customer["purchase_reference_price"],
+        area=customer["exclusive_area_m2"],
+        sido=customer["sido"],
+        sigungu=customer["sigungu"],
     )
     result = client.post("/api/plan", json=buyer).json()
     bands = result["bands"]

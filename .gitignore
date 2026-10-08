@@ -19,3 +19,6 @@ frontend/dist/
 frontend/*.tsbuildinfo
 *.log
 /cloudflared.exe
+
+# Legacy code and files kept locally only
+archive/

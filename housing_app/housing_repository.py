@@ -1,27 +1,42 @@
-"""Parameterized local DB queries. No arbitrary SQL is exposed to the LLM."""
+"""Parameterized local DB queries. No arbitrary SQL is exposed to the LLM.
+
+The serving database is read-only at runtime (only the geocode cache is written, by
+``naver_maps``), so region lists and per-district trades are cached in memory.
+"""
 
 import sqlite3
+import threading
+from collections import OrderedDict
 from pathlib import Path
+
 import pandas as pd
-from housing_app.settings import Settings
+
 from housing_app.regions import SEOUL_GU
+from housing_app.settings import get_settings
+
+TRADE_CACHE_SIZE = 64
 
 
 class HousingRepository:
     def __init__(self, path=None):
-        self.path = Path(path or Settings().database_path)
+        self.path = Path(path or get_settings().database_path)
+        self._regions = None
+        self._trades = OrderedDict()
+        self._lock = threading.Lock()  # sync routes run on a thread pool
 
     def query(self, sql, params=()):
         with sqlite3.connect(self.path.as_uri() + "?mode=ro", uri=True) as db:
             return pd.read_sql_query(sql, db, params=params)
 
     def regions(self):
-        rows = self.query(
-            "SELECT DISTINCT sido,sigungu FROM housing_customers ORDER BY sido,sigungu"
-        )
-        out = {s: sorted(g.sigungu.unique()) for s, g in rows.groupby("sido")}
-        out["서울특별시"] = SEOUL_GU
-        return out
+        if self._regions is None:
+            rows = self.query(
+                "SELECT DISTINCT sido,sigungu FROM housing_customers ORDER BY sido,sigungu"
+            )
+            out = {s: sorted(g.sigungu.unique()) for s, g in rows.groupby("sido")}
+            out["서울특별시"] = SEOUL_GU
+            self._regions = out
+        return self._regions
 
     def scope(self, sido="", sigungu=""):
         clauses = []
@@ -67,13 +82,27 @@ class HousingRepository:
         )
 
     def trades(self, sido, sigungu):
+        """Latest-first trades of one district; a copy, so callers may filter freely."""
+        key = (sido, sigungu)
+        with self._lock:
+            cached = self._trades.get(key)
+            if cached is not None:
+                self._trades.move_to_end(key)
+                return cached.copy()
         where, p = self.scope(sido, sigungu)
-        return self.query(
-            "SELECT complex_id,reference_trade_id,apt_name,address,exclusive_area_m2,purchase_reference_price,estimated_value,reference_deal_date,build_year,purchase_year FROM apartment_trades"
+        frame = self.query(
+            "SELECT complex_id,reference_trade_id,apt_name,address,exclusive_area_m2,"
+            "purchase_reference_price,estimated_value,reference_deal_date,build_year,"
+            "purchase_year FROM apartment_trades"
             + where
             + " ORDER BY reference_deal_date DESC, reference_trade_id",
             p,
         )
+        with self._lock:
+            self._trades[key] = frame
+            if len(self._trades) > TRADE_CACHE_SIZE:
+                self._trades.popitem(last=False)
+        return frame.copy()
 
     def complex_loans(self, complex_id):
         return (

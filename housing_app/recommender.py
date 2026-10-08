@@ -1,5 +1,5 @@
 # =============================================================================
-# 추천 계산 로직 (화면과 분리 — app.py가 이 모듈을 호출)
+# 추천 계산 로직 (화면과 분리 — housing_app/api.py가 이 모듈을 호출)
 #   1. 비슷한 구매자 집단(kNN) 통계: 대출 조합 비중, 대출금액·LTV·금리·월상환·DSR·자기자금비율 범위
 #   2. 내 조건 예측: GBM(조합 확률, LTV, 마통 비율) + 집단 중앙값(금리, 만기) → 월상환·DSR·판정
 #   3. 대안: 감당 가능한 최대 가격 역산 → 비슷한 사람들이 그 가격 이하에서 많이 산 가격대·면적·지역
@@ -218,7 +218,11 @@ class Recommender:
         rates["term"] = inp.get("term", inp.get("term_years")) or rates["term"]
         cash = inp.get("cash", inp["assets"]) + inp["other_funds"]
         p = self.plan(
-            u, cash, inp["consumption"], rates, use_cl,
+            u,
+            cash,
+            inp["consumption"],
+            rates,
+            use_cl,
             inp.get("existing_pay", inp.get("existing_payment", 0.0)),
         ).iloc[0]
         return u, proba, use_cl, rates, cash, p
@@ -246,8 +250,14 @@ class Recommender:
             ],
             ignore_index=True,
         )
-        P = self.plan(U, cash, inp["consumption"], rates, use_cl,
-                      inp.get("existing_pay", inp.get("existing_payment", 0.0)))
+        P = self.plan(
+            U,
+            cash,
+            inp["consumption"],
+            rates,
+            use_cl,
+            inp.get("existing_pay", inp.get("existing_payment", 0.0)),
+        )
         ok = P[P.verdict != "어려움"].price.max()
         comfy = P[P.verdict == "여유"].price.max()
         return (None if pd.isna(ok) else ok), (None if pd.isna(comfy) else comfy)

@@ -1,3 +1,5 @@
+import pytest
+
 """The deployed model and inference use the attached pre-purchase DSR feature."""
 
 import joblib
@@ -6,6 +8,8 @@ from housing_app.prep import MODEL_DIR, NUM_FEATURES, load_purchases, user_frame
 from housing_app.recommender import Recommender
 from housing_app.source_data import load_sources, load_detail_sources
 from housing_app.housing_repository import HousingRepository
+
+pytestmark = pytest.mark.data
 
 
 def test_existing_debt_reaches_deployed_model():
@@ -47,4 +51,7 @@ def test_customer_and_property_exports_reach_serving_database():
     source_detail = details[details.customer_id == 3].iloc[0]
     assert detail.reference_trade_id == source_detail.reference_trade_id
     assert detail.floor == source_detail.floor
-    assert repo.query("SELECT count(DISTINCT reference_trade_id) AS n FROM apartment_trades").iloc[0].n == details.reference_trade_id.nunique()
+    assert (
+        repo.query("SELECT count(DISTINCT reference_trade_id) AS n FROM apartment_trades").iloc[0].n
+        == details.reference_trade_id.nunique()
+    )

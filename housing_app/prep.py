@@ -1,5 +1,5 @@
 # =============================================================================
-# 공통 데이터 준비 모듈 — 학습(02_train.py)과 웹 화면(app.py)이 같이 사용
+# 공통 데이터 준비 모듈 — 학습(scripts/model_evaluation.py)과 API 서버가 같이 사용
 #   - 분석 대상 필터, 광주·전남 시도명 매핑, 파생 변수, 월상환 공식
 # =============================================================================
 from pathlib import Path
@@ -119,8 +119,7 @@ def load_purchases():
         hp[["customer_id", "purchase_date"]], on="customer_id"
     )
     live = other[
-        (other.opened_at <= other.purchase_date)
-        & (other.maturity_date > other.purchase_date)
+        (other.opened_at <= other.purchase_date) & (other.maturity_date > other.purchase_date)
     ]
     hp["existing_pay"] = hp.customer_id.map(
         live.groupby("customer_id").monthly_payment_estimated.sum()

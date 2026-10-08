@@ -6,7 +6,12 @@ from pathlib import Path
 
 import numpy as np
 
-from housing_app.source_data import load_sources, load_detail_sources, load_customer_supplements, DATA_DIR
+from housing_app.source_data import (
+    load_sources,
+    load_detail_sources,
+    load_customer_supplements,
+    DATA_DIR,
+)
 
 BASE = Path(__file__).resolve().parents[1]
 RAW = DATA_DIR
@@ -17,14 +22,19 @@ def audit():
     customers, details = load_detail_sources(homes)
     profiles, debts, accounts = load_customer_supplements()
     files = {}
-    for name, frame in (("home_purchases", homes), ("loans_raw", loans),
-                        ("customers_preprocessed", customers),
-                        ("real_estate_detail_preprocessed", details),
-                        ("customer_financial_profiles", profiles),
-                        ("customer_debt_summary", debts), ("accounts", accounts)):
+    for name, frame in (
+        ("home_purchases", homes),
+        ("loans_raw", loans),
+        ("customers_preprocessed", customers),
+        ("real_estate_detail_preprocessed", details),
+        ("customer_financial_profiles", profiles),
+        ("customer_debt_summary", debts),
+        ("accounts", accounts),
+    ):
         path = RAW / f"{name}.csv"
         files[name] = {
-            "rows": len(frame), "columns": list(frame.columns),
+            "rows": len(frame),
+            "columns": list(frame.columns),
             "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
             "missing": {key: int(value) for key, value in frame.isna().sum().items() if value},
         }
@@ -41,19 +51,40 @@ def audit():
         "reference_trade_ids_present": bool(details.reference_trade_id.notna().all()),
         "prices_positive": bool((homes.purchase_reference_price > 0).all()),
         "area_positive": bool((homes.exclusive_area_m2 > 0).all()),
-        "model_inputs_finite": bool(np.isfinite(homes[[
-            "purchase_price_est", "exclusive_area_m2", "household_annual_income",
-            "financial_assets_estimated", "avg_monthly_consumption", "age_at_purchase",
-        ]].to_numpy(float)).all()),
+        "model_inputs_finite": bool(
+            np.isfinite(
+                homes[
+                    [
+                        "purchase_price_est",
+                        "exclusive_area_m2",
+                        "household_annual_income",
+                        "financial_assets_estimated",
+                        "avg_monthly_consumption",
+                        "age_at_purchase",
+                    ]
+                ].to_numpy(float)
+            ).all()
+        ),
     }
-    linked = loans[loans.housing_purchase_linked == 1].groupby("customer_id").original_principal.sum()
-    checks["purchase_loans_reconcile"] = bool(np.allclose(
-        homes.total_loan_principal.fillna(0), homes.customer_id.map(linked).fillna(0), atol=0.1
-    ))
+    linked = (
+        loans[loans.housing_purchase_linked == 1].groupby("customer_id").original_principal.sum()
+    )
+    checks["purchase_loans_reconcile"] = bool(
+        np.allclose(
+            homes.total_loan_principal.fillna(0), homes.customer_id.map(linked).fillna(0), atol=0.1
+        )
+    )
     result = {
-        "source_kind": "supplied_csv", "files": files, "checks": checks,
-        "eligible_inference_reference_rows": int(((homes.purchase_year >= 2022) &
-            (homes.under20_at_purchase == 0) & (homes.own_funds_est > 0)).sum()),
+        "source_kind": "supplied_csv",
+        "files": files,
+        "checks": checks,
+        "eligible_inference_reference_rows": int(
+            (
+                (homes.purchase_year >= 2022)
+                & (homes.under20_at_purchase == 0)
+                & (homes.own_funds_est > 0)
+            ).sum()
+        ),
         "model_retrained": False,
         "limitations": [
             "Home purchases cover only the purchaser subset; complete profiles include non-owners.",
@@ -67,8 +98,11 @@ def audit():
         json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     (BASE / "reports" / "data_audit.md").write_text(
-        "# CSV audit\n\n" + "\n".join(f"- {key}: {value}" for key, value in checks.items())
-        + "\n\n" + "\n".join(result["limitations"]), encoding="utf-8"
+        "# CSV audit\n\n"
+        + "\n".join(f"- {key}: {value}" for key, value in checks.items())
+        + "\n\n"
+        + "\n".join(result["limitations"]),
+        encoding="utf-8",
     )
     if not all(checks.values()):
         raise ValueError(f"Supplied CSV audit failed: {checks}")

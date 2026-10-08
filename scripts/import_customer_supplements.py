@@ -14,7 +14,9 @@ def import_supplements():
         "accounts": accounts,
     }
     with sqlite3.connect(Settings().database_path, timeout=30) as db:
-        existing = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        existing = {
+            row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        }
         if "customers" not in existing:
             raise ValueError("Build the existing serving database before importing supplements")
         purchaser_ids = {row[0] for row in db.execute("SELECT customer_id FROM customers")}
@@ -27,8 +29,12 @@ def import_supplements():
             for name in frames:
                 db.execute(f"DROP TABLE IF EXISTS {name}")
                 db.execute(f"ALTER TABLE {name}_stage RENAME TO {name}")
-            db.execute("CREATE UNIQUE INDEX idx_profiles_customer ON customer_profiles(customer_id)")
-            db.execute("CREATE UNIQUE INDEX idx_debts_customer ON customer_debt_summary(customer_id)")
+            db.execute(
+                "CREATE UNIQUE INDEX idx_profiles_customer ON customer_profiles(customer_id)"
+            )
+            db.execute(
+                "CREATE UNIQUE INDEX idx_debts_customer ON customer_debt_summary(customer_id)"
+            )
             db.execute("CREATE INDEX idx_accounts_customer ON accounts(customer_id)")
             db.commit()
         except Exception:

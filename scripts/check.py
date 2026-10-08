@@ -40,8 +40,15 @@ def main():
                 present = {
                     r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")
                 }
-                expected = {"housing_customers", "apartment_trades", "loans_raw", "geocode_cache",
-                            "customer_profiles", "customer_debt_summary", "accounts"}
+                expected = {
+                    "housing_customers",
+                    "apartment_trades",
+                    "loans_raw",
+                    "geocode_cache",
+                    "customer_profiles",
+                    "customer_debt_summary",
+                    "accounts",
+                }
                 if not expected <= present:
                     errors.append("Required database tables are missing.")
         except sqlite3.Error:

@@ -1,7 +1,10 @@
 """HTTP interface over the imported customer and housing data."""
 
+import asyncio
 import json
+import logging
 import math
+from contextlib import asynccontextmanager
 from dataclasses import replace
 from functools import lru_cache
 from uuid import UUID
@@ -9,20 +12,34 @@ from uuid import UUID
 import numpy as np
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from housing_app import llm_advisor
+from housing_app.affordability import (
+    ModelPredictionError,
+    bands,
+    model_buyer,
+    recommender,
+)
 from housing_app.finance import (
-    Buyer, LIMIT_MONTHLY_SURPLUS, SAFE_DSR_FACTOR, affordability_bands,
-    candidates, financing, limit_buyer, max_affordable, stable_buyer,
+    Buyer,
+    LIMIT_MONTHLY_SURPLUS,
+    SAFE_DSR_FACTOR,
+    candidates,
+    financing,
+    limit_buyer,
+    stable_buyer,
 )
 from housing_app.housing_repository import HousingRepository
 from housing_app.naver_maps import cached_markers
 from housing_app.prep import user_frame
-from housing_app.recommender import FEATURES, Recommender
 from housing_app.regions import normalize_region
-from housing_app.settings import BASE, Settings
+from housing_app.settings import BASE, get_settings
+
+log = logging.getLogger("housing_app")
 
 
 class BuyerInput(BaseModel):
@@ -67,12 +84,7 @@ class MapSelection(BaseModel):
 
 @lru_cache(maxsize=1)
 def repository() -> HousingRepository:
-    return HousingRepository(Settings().database_path)
-
-
-@lru_cache(maxsize=1)
-def patterns() -> Recommender:
-    return Recommender()
+    return HousingRepository(get_settings().database_path)
 
 
 def clean(value):
@@ -101,57 +113,45 @@ def require_region(sido: str, sigungu: str):
         raise HTTPException(status_code=400, detail="DB에 없는 시·군·구입니다.")
 
 
-def validated_buyer(data: BuyerInput):
+def validated_buyer(data: BuyerInput) -> Buyer:
     require_region(data.sido, data.sigungu)
-    return model_buyer(data.buyer())
+    try:
+        return model_buyer(data.buyer())
+    except ModelPredictionError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
 
 
-def model_buyer(buyer: Buyer) -> Buyer:
-    """Predict loan ratios for a purchase at the stable-band ceiling and use them everywhere.
-
-    The ceiling depends on the ratios, so re-predict at the new ceiling until it settles.
-    Without a stable band, fall back to the buyer's own price.
-    """
-    anchored = predicted_ratios(buyer, buyer.price)
-    for _ in range(5):
-        safe = affordability_bands(anchored)["safe"]
-        if safe < 1:
-            return predicted_ratios(buyer, buyer.price)
-        if abs(safe - anchored.model_basis_price) < 10_000:
-            break
-        anchored = predicted_ratios(buyer, safe)
-    return anchored
+def warm_caches():
+    """Load the DB region list and the model/kNN data before the first request."""
+    repository().regions()
+    recommender()
 
 
-def predicted_ratios(buyer: Buyer, price: float) -> Buyer:
-    """Saved regressors' loan ratios for buying at ``price``, capped by the assumptions."""
-    engine = patterns()
-    frame = user_frame(
-        buyer.income, buyer.assets, buyer.consumption, price, buyer.area,
-        buyer.age, buyer.sido, engine.cats, buyer.existing_payment,
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    logging.basicConfig(
+        level=get_settings().log_level.upper(),
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
-    mortgage_ratio = float(engine.models["mort_ltv"].predict(frame[FEATURES])[0])
-    credit_ratio = float(engine.models["cl_ratio"].predict(frame[FEATURES])[0])
-    if not math.isfinite(mortgage_ratio) or not math.isfinite(credit_ratio):
-        raise HTTPException(status_code=503, detail="학습 모델의 대출 예측값이 유효하지 않습니다.")
-    return replace(
-        buyer,
-        model_mortgage_ratio=max(0.0, min(mortgage_ratio, buyer.ltv_cap)),
-        model_credit_ratio=max(0.0, min(credit_ratio, buyer.credit_cap_ratio)),
-        model_basis_price=price,
-    )
+    try:
+        await asyncio.to_thread(warm_caches)
+    except Exception:
+        log.exception("Cache warm-up failed; data will load on first request")
+    yield
 
 
-app = FastAPI(title="내 집 마련 API", version="1.0.0")
+app = FastAPI(title="내 집 마련 API", version="1.0.0", lifespan=lifespan)
+app.add_middleware(GZipMiddleware, minimum_size=1024)
+
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "database": Settings().database_path.is_file()}
+    return {"status": "ok", "database": get_settings().database_path.is_file()}
 
 
 @app.get("/api/meta")
 def meta():
-    settings = Settings()
+    settings = get_settings()
     return {
         "regions": repository().regions(),
         "defaults": BuyerInput().model_dump(),
@@ -160,6 +160,11 @@ def meta():
         "naver_client_id": settings.naver_maps_client_id,
         "synthetic": False,
     }
+
+
+# ---------------------------------------------------------------------------
+# Raw data lookups
+# ---------------------------------------------------------------------------
 
 
 @app.get("/api/regions/summary")
@@ -192,85 +197,123 @@ def customer_loans(customer_id: int):
     return clean(repository().customer_loans(customer_id))
 
 
+# ---------------------------------------------------------------------------
+# Customer picker
+# ---------------------------------------------------------------------------
+
+FEATURED_CUSTOMERS = "68729,77193,6507,2098"
+
+
 @app.get("/api/demo-customers")
 def demo_customers(q: str = Query("", max_length=20), limit: int = Query(30, ge=1, le=100)):
     """Search all supplied customer profiles by their source name or customer ID."""
     where = "WHERE p.name LIKE ? OR CAST(p.customer_id AS TEXT) LIKE ?" if q else ""
     params = (f"%{q}%", f"{q}%", limit) if q else (limit,)
-    order = ("CASE WHEN p.customer_id IN (68729,77193,6507,2098) THEN 0 ELSE 1 END, "
-             "p.customer_id" if q and not q.isdigit() else "p.customer_id")
+    order = (
+        f"CASE WHEN p.customer_id IN ({FEATURED_CUSTOMERS}) THEN 0 ELSE 1 END, p.customer_id"
+        if q and not q.isdigit()
+        else "p.customer_id"
+    )
     rows = repository().query(
         "SELECT p.customer_id,p.name AS display_name,p.age,p.household_size "
-        f"FROM customer_profiles p {where} ORDER BY {order} LIMIT ?", params,
+        f"FROM customer_profiles p {where} ORDER BY {order} LIMIT ?",
+        params,
     )
     return clean(rows)
 
 
+def budget_customer(customer_id: int, source: pd.Series, account_total: float):
+    """Profile-only customer: no purchase record, so use the stated budget and summary debts."""
+    sido, _ = normalize_region(source.region, "")
+    customer = {
+        "customer_id": customer_id,
+        "name": source["name"],
+        "age": source.age,
+        "household_annual_income": source.household_annual_income,
+        "financial_assets_estimated": source.financial_assets_estimated,
+        "account_balance_total": account_total,
+        "avg_monthly_consumption": source.monthly_consumption_budget,
+        "monthly_debt_service": source.monthly_debt_service,
+        "is_home_owner": source.is_home_owner,
+        "cf_months": None,
+        "sido": sido,
+        "sigungu": None,
+        "exclusive_area_m2": None,
+        "purchase_reference_price": None,
+        "consumption_source": "budget",
+        "residence_region": source.region,
+    }
+    debts = [
+        {
+            "loan_type": label + " 잔액(요약)",
+            "outstanding_balance": source[key],
+            "monthly_payment_estimated": None,
+        }
+        for key, label in (
+            ("personal_loan_balance", "개인 대출"),
+            ("credit_line_balance", "한도대출"),
+            ("mortgage_balance", "주택담보대출"),
+        )
+        if source[key] > 0
+    ]
+    return customer, debts
+
+
 @app.get("/api/demo-customers/{customer_id}")
 def demo_customer(customer_id: int):
-    profile = repository().query(
+    repo = repository()
+    profile = repo.query(
         "SELECT p.customer_id,p.name,p.age,p.region,p.household_size,p.household_annual_income,"
         "p.financial_assets_estimated,p.monthly_consumption_budget,"
         "d.monthly_debt_service,d.is_home_owner,d.personal_loan_balance,"
         "d.credit_line_balance,d.mortgage_balance "
         "FROM customer_profiles p JOIN customer_debt_summary d ON d.customer_id=p.customer_id "
-        "WHERE p.customer_id=? LIMIT 1", (customer_id,),
+        "WHERE p.customer_id=? LIMIT 1",
+        (customer_id,),
     )
     if profile.empty:
         raise HTTPException(status_code=404, detail="고객을 찾을 수 없습니다.")
     source = profile.iloc[0]
-    frame = repository().query(
+    accounts = repo.query(
+        "SELECT account_type,balance,status FROM accounts WHERE customer_id=? ORDER BY account_id",
+        (customer_id,),
+    )
+    account_total = float(accounts.loc[accounts.status == "ACTIVE", "balance"].sum())
+    purchase = repo.query(
         "SELECT customer_id,age,household_annual_income,financial_assets_estimated,"
         "avg_monthly_consumption,monthly_debt_service,is_home_owner,cf_months,"
         "sido,sigungu,exclusive_area_m2,purchase_reference_price "
         "FROM customers WHERE customer_id=? LIMIT 1",
         (customer_id,),
     )
-    accounts = repository().query(
-        "SELECT account_type,balance,status FROM accounts WHERE customer_id=? ORDER BY account_id",
-        (customer_id,),
-    )
-    account_balance_total = float(accounts.loc[accounts.status == "ACTIVE", "balance"].sum())
-    if frame.empty:
-        sido, _ = normalize_region(source.region, "")
-        customer = {
-            "customer_id": customer_id, "name": source["name"], "age": source.age,
-            "household_annual_income": source.household_annual_income,
-            "financial_assets_estimated": source.financial_assets_estimated,
-            "account_balance_total": account_balance_total,
-            "avg_monthly_consumption": source.monthly_consumption_budget,
-            "monthly_debt_service": source.monthly_debt_service,
-            "is_home_owner": source.is_home_owner, "cf_months": None,
-            "sido": sido, "sigungu": None, "exclusive_area_m2": None,
-            "purchase_reference_price": None, "consumption_source": "budget",
-            "residence_region": source.region,
-        }
-        debts = [
-            {"loan_type": label + " 잔액(요약)", "outstanding_balance": source[key],
-             "monthly_payment_estimated": None}
-            for key, label in (("personal_loan_balance", "개인 대출"),
-                               ("credit_line_balance", "한도대출"),
-                               ("mortgage_balance", "주택담보대출"))
-            if source[key] > 0
-        ]
-        return clean({"customer": customer, "loans": debts, "property": None,
-                      "accounts": accounts})
-    loans = repository().query(
+    if purchase.empty:
+        customer, debts = budget_customer(customer_id, source, account_total)
+        return clean({"customer": customer, "loans": debts, "property": None, "accounts": accounts})
+    loans = repo.query(
         "SELECT loan_type,outstanding_balance,monthly_payment_estimated "
         "FROM loans_raw WHERE customer_id=? ORDER BY loan_id",
         (customer_id,),
     )
-    property_detail = repository().query(
+    property_detail = repo.query(
         "SELECT real_asset_id,apt_name,exclusive_area_m2,floor,build_year,"
         "reference_deal_date,purchase_reference_price,reference_trade_id "
         "FROM real_estate_detail WHERE customer_id=? LIMIT 1",
         (customer_id,),
     )
-    customer = frame.iloc[0].to_dict()
-    customer.update(name=source["name"], residence_region=source.region,
-                    consumption_source="observed", account_balance_total=account_balance_total)
-    return clean({"customer": customer, "loans": loans, "accounts": accounts,
-                  "property": property_detail.iloc[0].to_dict() if not property_detail.empty else None})
+    customer = purchase.iloc[0].to_dict()
+    customer.update(
+        name=source["name"],
+        residence_region=source.region,
+        consumption_source="observed",
+        account_balance_total=account_total,
+    )
+    owned = property_detail.iloc[0].to_dict() if not property_detail.empty else None
+    return clean({"customer": customer, "loans": loans, "accounts": accounts, "property": owned})
+
+
+# ---------------------------------------------------------------------------
+# Affordability
+# ---------------------------------------------------------------------------
 
 
 @app.post("/api/recommendations")
@@ -282,15 +325,21 @@ def recommendations(data: BuyerInput):
 @app.post("/api/plan")
 def plan(data: BuyerInput):
     buyer = validated_buyer(data)
-    bands = affordability_bands(buyer)
-    safe_plan = financing(stable_buyer(buyer), bands["safe"], enforce_price_cap=False) if bands["safe"] >= 1 else None
-    binding_reasons = financing(limit_buyer(buyer), max(bands["maximum"] + 1_000_000, 1), enforce_price_cap=False)["reasons"]
+    limits = bands(buyer)
+    safe_plan = (
+        financing(stable_buyer(buyer), limits["safe"], enforce_price_cap=False)
+        if limits["safe"] >= 1
+        else None
+    )
+    binding_reasons = financing(
+        limit_buyer(buyer), max(limits["maximum"] + 1_000_000, 1), enforce_price_cap=False
+    )["reasons"]
     return clean(
         {
             "plan": financing(buyer, buyer.price),
             "safe_plan": safe_plan,
-            "max_affordable": max_affordable(buyer),
-            "bands": bands,
+            "max_affordable": limits["possible"],
+            "bands": limits,
             "binding_reasons": binding_reasons,
             "band_assumptions": {
                 "safe_dsr_cap": buyer.dsr_cap * SAFE_DSR_FACTOR,
@@ -317,16 +366,18 @@ def explore(data: BuyerInput):
     if frame.empty:
         return {"total": 0, "rows": []}
     frame = frame.drop_duplicates("complex_id", keep="first")
-    bands = affordability_bands(buyer)
+    limits = bands(buyer)
     rows = []
     for row in frame.to_dict("records"):
         if row["build_year"] is not None and row["build_year"] > row["purchase_year"]:
             continue
         price = float(row["purchase_reference_price"])
-        scenario = limit_buyer(buyer) if bands["possible"] < price <= bands["maximum"] else buyer
-        basis = "limit_scenario" if scenario is not buyer else None
+        in_limit_band = limits["possible"] < price <= limits["maximum"]
+        scenario = limit_buyer(buyer) if in_limit_band else buyer
+        basis = "limit_scenario" if in_limit_band else None
+        stressed = replace(scenario, mortgage_rate=scenario.mortgage_rate + 1)
         row["plan"] = financing(scenario, price, enforce_price_cap=False, loan_basis=basis)
-        row["stress_plan"] = financing(replace(scenario, mortgage_rate=scenario.mortgage_rate + 1), price, enforce_price_cap=False, loan_basis=basis)
+        row["stress_plan"] = financing(stressed, price, enforce_price_cap=False, loan_basis=basis)
         rows.append(row)
     rows.sort(key=lambda row: row["purchase_reference_price"])
     return clean({"total": len(rows), "rows": rows})
@@ -335,7 +386,7 @@ def explore(data: BuyerInput):
 @app.post("/api/patterns")
 def buyer_patterns(data: BuyerInput):
     buyer = validated_buyer(data)
-    engine = patterns()
+    engine = recommender()
     u = user_frame(
         buyer.income,
         buyer.assets,
@@ -350,6 +401,7 @@ def buyer_patterns(data: BuyerInput):
     group = engine.similar_group(u)
     description, share, stats = engine.group_summary(group)
     _, probability, _, _, _, _ = engine.predict(data.model_dump(), group)
+    limits = bands(buyer)
     result = {
         "description": description,
         "share": share.to_dict(),
@@ -358,7 +410,7 @@ def buyer_patterns(data: BuyerInput):
         "loan_prediction": None,
     }
     # The same ratios every finance surface uses, shown at the stable-band ceiling.
-    safe_price = affordability_bands(buyer)["safe"]
+    safe_price = limits["safe"]
     if safe_price >= 1:
         ratios = buyer.model_mortgage_ratio, buyer.model_credit_ratio
         result["loan_prediction"] = {
@@ -369,9 +421,8 @@ def buyer_patterns(data: BuyerInput):
             "credit": safe_price * ratios[1],
             "total": safe_price * sum(ratios),
         }
-    target = max_affordable(buyer)
-    if target >= 30_000_000:
-        alternatives = engine.alternatives(u, target, buyer.sido)
+    if limits["possible"] >= 30_000_000:
+        alternatives = engine.alternatives(u, limits["possible"], buyer.sido)
         result["alternatives"] = {
             "region_basis": alternatives["region_basis"],
             "regions": alternatives["regions"].reset_index(),
@@ -381,18 +432,33 @@ def buyer_patterns(data: BuyerInput):
     return clean(result)
 
 
-def map_data(sido: str, sigungu: str, resolve: bool, complex_ids: list[str] | None = None,
-             customer_id: int | None = None):
+# ---------------------------------------------------------------------------
+# Map
+# ---------------------------------------------------------------------------
+
+MAP_MARKER_LIMIT = 30
+
+
+def map_data(
+    sido: str,
+    sigungu: str,
+    resolve: bool,
+    complex_ids: list[str] | None = None,
+    customer_id: int | None = None,
+):
     require_region(sido, sigungu)
-    settings = Settings()
-    trades = repository().trades(sido, sigungu).drop_duplicates("complex_id")
+    settings = get_settings()
+    repo = repository()
+    trades = repo.trades(sido, sigungu).drop_duplicates("complex_id")
     if complex_ids is not None:
         wanted = list(dict.fromkeys(complex_ids))
         trades = trades[trades.complex_id.isin(wanted)]
-        trades = trades.set_index("complex_id").reindex(wanted).dropna(subset=["apt_name"]).reset_index()
-    rows = trades.head(30).to_dict("records")
+        trades = (
+            trades.set_index("complex_id").reindex(wanted).dropna(subset=["apt_name"]).reset_index()
+        )
+    rows = trades.head(MAP_MARKER_LIMIT).to_dict("records")
     if customer_id is not None:
-        owned = repository().query(
+        owned = repo.query(
             "SELECT complex_id,apt_name,address,exclusive_area_m2,purchase_reference_price,"
             "reference_deal_date,build_year,purchase_year,sido,sigungu "
             "FROM housing_customers WHERE customer_id=?",
@@ -403,7 +469,7 @@ def map_data(sido: str, sigungu: str, resolve: bool, complex_ids: list[str] | No
             if own["sido"] == sido and own["sigungu"] == sigungu:
                 own["is_owned"] = True
                 rows.append(own)
-    loan_summaries = repository().complex_loans_bulk(row["complex_id"] for row in rows)
+    loan_summaries = repo.complex_loans_bulk(row["complex_id"] for row in rows)
     for row in rows:
         row["loan_summary"] = loan_summaries[row["complex_id"]]
     if not settings.naver_maps_client_id:
@@ -411,6 +477,7 @@ def map_data(sido: str, sigungu: str, resolve: bool, complex_ids: list[str] | No
     try:
         markers, missing = cached_markers(rows, settings, resolve)
     except Exception as exc:
+        log.exception("Geocoding failed for %s %s", sido, sigungu)
         raise HTTPException(
             status_code=502, detail=f"좌표 조회 실패: {type(exc).__name__}"
         ) from None
@@ -424,22 +491,39 @@ def map_markers(sido: str, sigungu: str):
 
 @app.post("/api/map/resolve")
 def map_resolve(sido: str, sigungu: str, selection: MapSelection | None = None):
-    return map_data(sido, sigungu, True,
-                    selection.complex_ids if selection else None,
-                    selection.customer_id if selection else None)
+    return map_data(
+        sido,
+        sigungu,
+        True,
+        selection.complex_ids if selection else None,
+        selection.customer_id if selection else None,
+    )
+
+
+# ---------------------------------------------------------------------------
+# AI chat
+# ---------------------------------------------------------------------------
+
+_chat_slots: asyncio.Semaphore | None = None
+
+
+def chat_slots() -> asyncio.Semaphore:
+    """Cap concurrent OpenAI conversations so bursts queue instead of hitting rate limits."""
+    global _chat_slots
+    if _chat_slots is None:
+        _chat_slots = asyncio.Semaphore(get_settings().chat_max_concurrency)
+    return _chat_slots
 
 
 @app.post("/api/chat")
 async def chat(request: ChatRequest):
-    from housing_app.llm_advisor import chat_async
-    from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
-
-    settings = Settings()
+    settings = get_settings()
     if not settings.openai_api_key.get_secret_value():
         raise HTTPException(status_code=503, detail="OpenAI 키가 설정되지 않았습니다.")
-    buyer = validated_buyer(request.buyer)
-    result = candidates(repository(), buyer)
-    regions = repository().regions()
+    buyer = await asyncio.to_thread(validated_buyer, request.buyer)
+    repo = repository()
+    result = await asyncio.to_thread(candidates, repo, buyer)
+    regions = repo.regions()
 
     def search_region(current_buyer: Buyer, district: str):
         matches = [sido for sido, districts in regions.items() if district in districts]
@@ -450,68 +534,70 @@ async def chat(request: ChatRequest):
         else:
             return None
         updated = model_buyer(replace(current_buyer, sido=sido, sigungu=district))
-        return updated, candidates(repository(), updated)
+        return updated, candidates(repo, updated)
 
+    thread_id = str(request.thread_id)
     try:
-        settings.chat_checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
-        async with AsyncSqliteSaver.from_conn_string(
-            str(settings.chat_checkpoint_path)
-        ) as checkpointer:
-            answer = await chat_async(
+        async with chat_slots(), llm_advisor.checkpointer(settings) as saver:
+            answer = await llm_advisor.chat_async(
                 settings,
                 buyer,
                 result,
                 [{"role": "user", "content": request.message}],
                 search_region=search_region,
-                thread_id=str(request.thread_id),
-                checkpointer=checkpointer,
+                thread_id=thread_id,
+                checkpointer=saver,
             )
         return clean(answer)
     except Exception as exc:
+        log.warning("Chat failed for thread %s: %s", thread_id, exc, exc_info=True)
         # A failed graph run may have written partial tool/assistant messages.
         # Discard this conversation so the next request cannot inherit them.
-        if settings.chat_checkpoint_path.is_file():
-            try:
-                async with AsyncSqliteSaver.from_conn_string(
-                    str(settings.chat_checkpoint_path)
-                ) as checkpointer:
-                    await checkpointer.adelete_thread(str(request.thread_id))
-            except Exception:
-                pass
+        try:
+            await llm_advisor.delete_thread(settings, thread_id)
+        except Exception:
+            log.exception("Could not discard chat thread %s", thread_id)
         raise HTTPException(status_code=502, detail=f"AI 응답 실패: {type(exc).__name__}") from None
 
 
 @app.delete("/api/chat/{thread_id}")
 async def delete_chat(thread_id: UUID):
-    from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
-
-    path = Settings().chat_checkpoint_path
-    if not path.is_file():
-        return {"deleted": True}
-    async with AsyncSqliteSaver.from_conn_string(str(path)) as checkpointer:
-        await checkpointer.adelete_thread(str(thread_id))
+    await llm_advisor.delete_thread(get_settings(), str(thread_id))
     return {"deleted": True}
 
 
 @app.get("/api/validation")
 def validation():
-    model_report = json.loads(
-        (BASE / "reports" / "model_evaluation.json").read_text(encoding="utf-8")
-    )
+    def report(name):
+        return json.loads((BASE / "reports" / name).read_text(encoding="utf-8"))
+
+    model_report = report("model_evaluation.json")
     model_report["evaluation_source"] = "이전 학습 CSV; 현재 제공 CSV는 추론에만 사용"
-    return {
-        "model": model_report,
-        "audit": json.loads((BASE / "reports" / "data_audit.json").read_text(encoding="utf-8")),
-    }
+    return {"model": model_report, "audit": report("data_audit.json")}
+
+
+# ---------------------------------------------------------------------------
+# Built React app (single-page; unknown paths fall back to index.html)
+# ---------------------------------------------------------------------------
+
+
+class ImmutableStaticFiles(StaticFiles):
+    """Vite asset names contain a content hash, so browsers may cache them for a year."""
+
+    async def get_response(self, path, scope):
+        response = await super().get_response(path, scope)
+        if response.status_code == 200:
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        return response
 
 
 FRONTEND = BASE / "frontend" / "dist"
 if FRONTEND.is_dir():
-    app.mount("/assets", StaticFiles(directory=FRONTEND / "assets"), name="assets")
+    app.mount("/assets", ImmutableStaticFiles(directory=FRONTEND / "assets"), name="assets")
 
     @app.get("/{path:path}", include_in_schema=False)
     def frontend(path: str):
         target = (FRONTEND / path).resolve()
         if path and target.is_file() and target.is_relative_to(FRONTEND.resolve()):
             return FileResponse(target)
-        return FileResponse(FRONTEND / "index.html")
+        return FileResponse(FRONTEND / "index.html", headers={"Cache-Control": "no-cache"})

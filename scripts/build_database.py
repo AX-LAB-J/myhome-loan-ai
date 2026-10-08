@@ -6,7 +6,12 @@ import sqlite3
 import time
 from contextlib import closing
 
-from housing_app.source_data import load_sources, load_detail_sources, load_customer_supplements, serving_frames
+from housing_app.source_data import (
+    load_sources,
+    load_detail_sources,
+    load_customer_supplements,
+    serving_frames,
+)
 from scripts.audit_data import audit, BASE
 
 
@@ -20,7 +25,9 @@ def build():
     housing, trades, customers = serving_frames(homes, loans, customer_source, detail_source)
     details = detail_source.merge(
         housing[["real_asset_id", "address", "sido", "sigungu", "complex_id"]],
-        on="real_asset_id", validate="one_to_one")
+        on="real_asset_id",
+        validate="one_to_one",
+    )
     path = BASE / "data" / "housing.sqlite"
     pending = path.with_suffix(".pending.sqlite")
     pending.unlink(missing_ok=True)
@@ -41,13 +48,22 @@ def build():
             db.execute("CREATE INDEX idx_loans_customer ON loans_raw(customer_id)")
             db.execute("CREATE INDEX idx_housing_customer ON housing_customers(customer_id)")
             db.execute("CREATE INDEX idx_detail_customer ON real_estate_detail(customer_id)")
-            db.execute("CREATE UNIQUE INDEX idx_profiles_customer ON customer_profiles(customer_id)")
-            db.execute("CREATE UNIQUE INDEX idx_debts_customer ON customer_debt_summary(customer_id)")
+            db.execute("CREATE INDEX idx_customers_customer ON customers(customer_id)")
+            db.execute(
+                "CREATE UNIQUE INDEX idx_profiles_customer ON customer_profiles(customer_id)"
+            )
+            db.execute(
+                "CREATE UNIQUE INDEX idx_debts_customer ON customer_debt_summary(customer_id)"
+            )
             db.execute("CREATE INDEX idx_accounts_customer ON accounts(customer_id)")
-            db.execute("CREATE TABLE geocode_cache(address TEXT PRIMARY KEY, latitude REAL, longitude REAL, matched_address TEXT, checked_at TEXT)")
+            db.execute(
+                "CREATE TABLE geocode_cache(address TEXT PRIMARY KEY, latitude REAL, longitude REAL, matched_address TEXT, checked_at TEXT)"
+            )
             if path.exists():
                 with closing(sqlite3.connect(path)) as old:
-                    cached = old.execute("SELECT address,latitude,longitude,matched_address,checked_at FROM geocode_cache").fetchall()
+                    cached = old.execute(
+                        "SELECT address,latitude,longitude,matched_address,checked_at FROM geocode_cache"
+                    ).fetchall()
                     db.executemany("INSERT INTO geocode_cache VALUES(?,?,?,?,?)", cached)
             assert db.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
             assert abs(housing.all_balance.sum() - loans.outstanding_balance.sum()) < 0.01
@@ -64,11 +80,16 @@ def build():
         if pending.exists():
             pending.unlink()
     result = {
-        "customers": len(housing), "customer_details": len(customers),
-        "all_customer_profiles": len(profiles), "accounts": len(accounts),
-        "real_estate_details": len(details), "loans": len(loans),
-        "unique_reference_trades": len(trades), "complexes": housing.complex_id.nunique(),
-        "original": housing.all_original.sum(), "balance": housing.all_balance.sum(),
+        "customers": len(housing),
+        "customer_details": len(customers),
+        "all_customer_profiles": len(profiles),
+        "accounts": len(accounts),
+        "real_estate_details": len(details),
+        "loans": len(loans),
+        "unique_reference_trades": len(trades),
+        "complexes": housing.complex_id.nunique(),
+        "original": housing.all_original.sum(),
+        "balance": housing.all_balance.sum(),
         "model_retrained": False,
     }
     (BASE / "reports" / "database_summary.json").write_text(

@@ -1,18 +1,19 @@
 [project]
 name = "housing-loan-side"
 version = "0.1.0"
-description = "Synthetic housing and loan explorer with a grounded Deep Agent"
+description = "Housing affordability explorer with a grounded OpenAI chat agent"
 requires-python = ">=3.12,<3.13"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-ra"
+markers = ["data: needs the private DB, CSV and model files under data/ and models/"]
 
 [tool.ruff]
 target-version = "py312"
 line-length = 100
-exclude = ["side", ".venv", "data", "models"]
+exclude = ["side", ".venv", "data", "models", "archive", "frontend"]
 
 [tool.ruff.lint]
 select = ["E9", "F401", "F63", "F7", "F82", "F841"]
