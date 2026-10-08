@@ -1,4 +1,4 @@
-# Allowlist: no credentials, local environments, raw data, models or test logs.
+# Allowlist: only what the Dockerfile copies. No credentials, data, models, envs or archive.
 **
 !Dockerfile
 !requirements.txt
@@ -18,6 +18,5 @@
 !frontend/tsconfig.json
 !frontend/vite.config.ts
 !frontend/src/
-!frontend/src/*.tsx
-!frontend/src/*.ts
-!frontend/src/*.css
+!frontend/src/**
+**/__pycache__

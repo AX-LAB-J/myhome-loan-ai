@@ -4,3 +4,4 @@
 *.png binary
 *.joblib binary
 *.sqlite binary
+*.ps1 text eol=crlf

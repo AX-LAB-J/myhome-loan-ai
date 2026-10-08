@@ -1,0 +1,64 @@
+# EC2 runtime: the app image from ECR behind Caddy (HTTP, or automatic HTTPS with a domain).
+# Lives in /opt/housing on the server next to .env, data/, models/ and Caddyfile.
+#   APP_IMAGE=<account>.dkr.ecr.ap-northeast-2.amazonaws.com/housing-side:latest
+#   SITE_ADDRESS=:80                (no domain yet)  or  SITE_ADDRESS=home.example.com
+services:
+  web:
+    image: ${APP_IMAGE:?set APP_IMAGE in /opt/housing/deploy.env}
+    expose:
+      - "8501"
+    environment:
+      # Only Caddy can reach this container, so trust its forwarded client address.
+      FORWARDED_ALLOW_IPS: "*"
+    volumes:
+      - type: bind
+        source: ./.env
+        target: /app/.env
+        read_only: true
+      - type: bind
+        source: ./data
+        target: /app/data
+      - type: bind
+        source: ./models
+        target: /app/models
+        read_only: true
+    restart: unless-stopped
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=128m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  caddy:
+    image: caddy:2.10.2-alpine
+    depends_on:
+      web:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  caddy_data:
+  caddy_config:

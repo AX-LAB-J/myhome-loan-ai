@@ -1,0 +1,10 @@
+# SITE_ADDRESS=":80" serves plain HTTP on the EC2 public IP.
+# SITE_ADDRESS="home.example.com" (DNS pointing at the Elastic IP) gets a Let's Encrypt certificate.
+{$SITE_ADDRESS::80} {
+	reverse_proxy web:8501
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+}

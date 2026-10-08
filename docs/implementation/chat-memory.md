@@ -1,7 +1,7 @@
 # 채팅 메모리 (2026-10-06)
 
 - `POST /api/chat`은 `thread_id`, 현재 `buyer`, 새 `message` 한 개를 받는다. 프런트엔드는 이전 메시지를 API에 재전송하지 않는다.
-- Deep Agents 그래프는 `AsyncSqliteSaver`에 대화별 상태를 저장한다. 기본 경로는 `data/chat_checkpoints.sqlite`이며 거래·고객 자료가 들어 있는 `housing.sqlite`와 별개다.
+- LangChain 에이전트 그래프는 `AsyncSqliteSaver`에 대화별 상태를 저장한다. 기본 경로는 `data/chat_checkpoints.sqlite`이며 거래·고객 자료가 들어 있는 `housing.sqlite`와 별개다.
 - 모델이 읽는 이전 문맥은 같은 `thread_id`의 체크포인트다. 후보·구매 조건 도구는 현재 요청에서 다시 호출해야 하며, 서버는 이번 실행에서 호출된 도구만 검증한다. 과거 도구 결과는 현재 가격이나 금융 계산의 근거로 인정하지 않는다.
 - 브라우저의 `sessionStorage`는 같은 탭 새로고침을 위해 고객 ID, 대화 ID, 표시용 텍스트 이력을 보관한다. 카드의 과거 계산값은 복원하지 않는다.
 - 고객 변경, 계산 가정 저장, 새 채팅 시작은 새 대화 ID를 만들고 기존 체크포인트 삭제를 요청한다. 실패한 그래프 실행은 서버에서도 해당 대화의 부분 체크포인트를 삭제한다.
