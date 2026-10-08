@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import type { Trade } from './api'
-import { won } from './api'
+import type { Trade } from '../api'
+import { won } from '../format'
 
 type NaverGlobal = { maps: {
   Map: new (node: HTMLElement, options: object) => MapInstance

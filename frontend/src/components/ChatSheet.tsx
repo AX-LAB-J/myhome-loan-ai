@@ -1,0 +1,37 @@
+import { Send, X } from 'lucide-react'
+import type { Message, Trade } from '../api'
+import { ChatRecommendation } from './ui'
+
+const SUGGESTIONS = ['성동구에서 내 조건에 맞는 집을 찾아줘', '금리가 1%p 올라도 괜찮은 곳은?', '예비비를 남기려면 어떻게 해야 해?']
+
+export default function ChatSheet({ messages, busy, text, onText, onSend, onReset, onClose, onOpenTrade, onShowResults }: {
+  messages: Message[]; busy: boolean; text: string; onText: (text: string) => void; onSend: () => void
+  onReset: () => void; onClose: () => void; onOpenTrade: (trade: Trade) => void; onShowResults: () => void
+}) {
+  return <div className="overlay chat-overlay" onClick={onClose}>
+    <section className="chat-sheet" role="dialog" aria-modal="true" aria-label="조건을 말로 바꿔 보세요" onClick={e => e.stopPropagation()}>
+      <div className="sheet-handle" />
+      <div className="title-row">
+        <h2>조건을 말로 바꿔 보세요</h2>
+        <button className="text-link" onClick={onReset}>새로 시작</button>
+        <button className="plain-icon" aria-label="채팅 닫기" onClick={onClose}><X /></button>
+      </div>
+      <div className="chat-body">
+        {messages.length === 0 && <p className="hint">아파트와 자금 조건을 물어보세요. 금액은 계산기가 계산해요.</p>}
+        {messages.map((m, i) => <div key={i} className="chat-message">
+          <p className={'chat-bubble ' + m.role}>{m.content}</p>
+          {m.recommendations?.map(({ trade, reason }) => <ChatRecommendation key={trade.complex_id} trade={trade} reason={reason} onOpen={() => onOpenTrade(trade)} />)}
+          {m.caveat && <p className="hint">{m.caveat}</p>}
+        </div>)}
+        {busy && <p className="hint">답변을 확인하는 중…</p>}
+      </div>
+      {messages.length > 0 && <div className="chat-actions"><button onClick={onShowResults}>바뀐 결과 보기</button></div>}
+      <div className="suggestions">{SUGGESTIONS.map(v => <button key={v} onClick={() => onText(v)}>{v}</button>)}</div>
+      <form className="sheet-form" onSubmit={e => { e.preventDefault(); onSend() }}>
+        <input aria-label="질문 입력" value={text} placeholder="예: 월 상환을 더 낮추고 싶어" onChange={e => onText(e.target.value)} />
+        <button type="submit" disabled={busy || !text.trim()} aria-label="질문 보내기"><Send size={18} /></button>
+      </form>
+      <p className="hint">금액은 AI가 아니라 계산기가 계산해요. AI는 결과를 설명해요.</p>
+    </section>
+  </div>
+}
