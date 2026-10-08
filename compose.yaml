@@ -2,7 +2,7 @@ services:
   web:
     build: .
     ports:
-      - "${BIND_ADDRESS:-127.0.0.1}:8501:8501"
+      - "${BIND_ADDRESS:-0.0.0.0}:8501:8501"
     volumes:
       - type: bind
         source: ./.env
