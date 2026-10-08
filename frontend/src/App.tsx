@@ -36,6 +36,15 @@ function savedAssumptions(customerId: number): Partial<Buyer> {
     return Object.fromEntries(savedKeys.filter(key => saved[key] != null).map(key => [key, saved[key]]))
   } catch { return {} }
 }
+// crypto.randomUUID exists only on HTTPS/localhost; plain-HTTP deployments need this fallback.
+function newThreadId(): string {
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID()
+  const b = crypto.getRandomValues(new Uint8Array(16))
+  b[6] = (b[6] & 0x0f) | 0x40
+  b[8] = (b[8] & 0x3f) | 0x80
+  const hex = Array.from(b, x => x.toString(16).padStart(2, '0')).join('')
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
+}
 const errorText = (e: unknown, fallback: string) => e instanceof Error ? e.message : fallback
 
 export default function App() {
@@ -56,7 +65,7 @@ export default function App() {
   const [chat, setChat] = useState(false)
   const [chatText, setChatText] = useState('')
   const [messages, setMessages] = useState<Message[]>(restoredChat?.messages ?? [])
-  const [threadId, setThreadId] = useState(() => restoredChat?.threadId ?? crypto.randomUUID())
+  const [threadId, setThreadId] = useState(() => restoredChat?.threadId ?? newThreadId())
   const [chatBusy, setChatBusy] = useState(false)
   const [mapView, setMapView] = useState(false)
   const [mapMarkers, setMapMarkers] = useState<Trade[]>([])
@@ -82,7 +91,7 @@ export default function App() {
   const startNewChat = () => {
     chatVersion.current += 1
     void deleteChat(threadId)
-    setThreadId(crypto.randomUUID()); setChatBusy(false); setMessages([]); setChatText('')
+    setThreadId(newThreadId()); setChatBusy(false); setMessages([]); setChatText('')
   }
 
   useEffect(() => {
@@ -119,7 +128,7 @@ export default function App() {
       }
       requestVersion.current += 1
       chatVersion.current += 1
-      if (!restore) { void deleteChat(threadId); setThreadId(crypto.randomUUID()) }
+      if (!restore) { void deleteChat(threadId); setThreadId(newThreadId()) }
       setPlan(null); setExplore(null); setCustomerId(id); setCustomer(detail); setBuyer(next); setDraft(next)
       setMessages(restore ? restoredChat?.messages ?? [] : []); setChatBusy(false); setSelected(null); setMapMarkers([])
       go('home')
@@ -190,7 +199,7 @@ export default function App() {
       setMessages([...next, { role: 'assistant', content: reply.answer, choices: reply.choices, recommendations: reply.recommendations, caveat: reply.caveat }])
     } catch (e) {
       if (version === chatVersion.current) {
-        setThreadId(crypto.randomUUID())
+        setThreadId(newThreadId())
         setMessages([...next, { role: 'assistant', content: `${errorText(e, '응답을 받지 못했습니다.')} 대화 문맥을 초기화했습니다. 질문을 다시 보내주세요.` }])
       }
     } finally { if (version === chatVersion.current) setChatBusy(false) }
