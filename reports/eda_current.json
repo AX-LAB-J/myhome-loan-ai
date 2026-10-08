@@ -1,0 +1,1292 @@
+{
+  "homes": 42225,
+  "customers": 42225,
+  "loans": 52846,
+  "reference_trades": 33813,
+  "regions": [
+    {
+      "sido": "강원특별자치도",
+      "sigungu": "강릉시",
+      "customers": 264
+    },
+    {
+      "sido": "강원특별자치도",
+      "sigungu": "고성군",
+      "customers": 4
+    },
+    {
+      "sido": "강원특별자치도",
+      "sigungu": "동해시",
+      "customers": 42
+    },
+    {
+      "sido": "강원특별자치도",
+      "sigungu": "삼척시",
+      "customers": 23
+    },
+    {
+      "sido": "강원특별자치도",
+      "sigungu": "속초시",
+      "customers": 123
+    },
+    {
+      "sido": "강원특별자치도",
+      "sigungu": "양구군",
+      "customers": 1
+    },
+    {
+      "sido": "강원특별자치도",
+      "sigungu": "양양군",
+      "customers": 5
+    },
+    {
+      "sido": "강원특별자치도",
+      "sigungu": "영월군",
+      "customers": 8
+    },
+    {
+      "sido": "강원특별자치도",
+      "sigungu": "원주시",
+      "customers": 419
+    },
+    {
+      "sido": "강원특별자치도",
+      "sigungu": "인제군",
+      "customers": 1
+    },
+    {
+      "sido": "강원특별자치도",
+      "sigungu": "정선군",
+      "customers": 2
+    },
+    {
+      "sido": "강원특별자치도",
+      "sigungu": "철원군",
+      "customers": 2
+    },
+    {
+      "sido": "강원특별자치도",
+      "sigungu": "춘천시",
+      "customers": 674
+    },
+    {
+      "sido": "강원특별자치도",
+      "sigungu": "태백시",
+      "customers": 11
+    },
+    {
+      "sido": "강원특별자치도",
+      "sigungu": "평창군",
+      "customers": 13
+    },
+    {
+      "sido": "강원특별자치도",
+      "sigungu": "홍천군",
+      "customers": 12
+    },
+    {
+      "sido": "강원특별자치도",
+      "sigungu": "횡성군",
+      "customers": 9
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "가평군",
+      "customers": 28
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "고양시 덕양구",
+      "customers": 338
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "고양시 일산동구",
+      "customers": 168
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "고양시 일산서구",
+      "customers": 276
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "과천시",
+      "customers": 87
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "광명시",
+      "customers": 248
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "광주시",
+      "customers": 180
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "구리시",
+      "customers": 149
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "군포시",
+      "customers": 219
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "김포시",
+      "customers": 405
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "남양주시",
+      "customers": 516
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "동두천시",
+      "customers": 83
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "부천시",
+      "customers": 347
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "부천시 소사구",
+      "customers": 65
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "부천시 오정구",
+      "customers": 14
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "부천시 원미구",
+      "customers": 117
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "성남시 분당구",
+      "customers": 558
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "성남시 수정구",
+      "customers": 127
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "성남시 중원구",
+      "customers": 118
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "수원시 권선구",
+      "customers": 257
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "수원시 영통구",
+      "customers": 468
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "수원시 장안구",
+      "customers": 207
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "수원시 팔달구",
+      "customers": 104
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "시흥시",
+      "customers": 414
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "안산시 단원구",
+      "customers": 206
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "안산시 상록구",
+      "customers": 116
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "안성시",
+      "customers": 205
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "안양시 동안구",
+      "customers": 394
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "안양시 만안구",
+      "customers": 143
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "양주시",
+      "customers": 191
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "양평군",
+      "customers": 28
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "여주시",
+      "customers": 90
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "연천군",
+      "customers": 11
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "오산시",
+      "customers": 233
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "용인시 기흥구",
+      "customers": 359
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "용인시 수지구",
+      "customers": 553
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "용인시 처인구",
+      "customers": 168
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "의왕시",
+      "customers": 140
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "의정부시",
+      "customers": 349
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "이천시",
+      "customers": 175
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "파주시",
+      "customers": 327
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "평택시",
+      "customers": 515
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "포천시",
+      "customers": 61
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "하남시",
+      "customers": 315
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "화성시",
+      "customers": 521
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "화성시 동탄구",
+      "customers": 194
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "화성시 만세구",
+      "customers": 25
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "화성시 병점구",
+      "customers": 59
+    },
+    {
+      "sido": "경기도",
+      "sigungu": "화성시 효행구",
+      "customers": 27
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "거제시",
+      "customers": 143
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "거창군",
+      "customers": 18
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "고성군",
+      "customers": 4
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "김해시",
+      "customers": 465
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "남해군",
+      "customers": 4
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "밀양시",
+      "customers": 27
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "사천시",
+      "customers": 46
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "산청군",
+      "customers": 3
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "양산시",
+      "customers": 341
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "의령군",
+      "customers": 3
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "진주시",
+      "customers": 498
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "창녕군",
+      "customers": 6
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "창원시 마산합포구",
+      "customers": 148
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "창원시 마산회원구",
+      "customers": 228
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "창원시 성산구",
+      "customers": 880
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "창원시 의창구",
+      "customers": 401
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "창원시 진해구",
+      "customers": 100
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "통영시",
+      "customers": 52
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "하동군",
+      "customers": 5
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "함안군",
+      "customers": 8
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "함양군",
+      "customers": 1
+    },
+    {
+      "sido": "경상남도",
+      "sigungu": "합천군",
+      "customers": 3
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "경산시",
+      "customers": 705
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "경주시",
+      "customers": 142
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "고령군",
+      "customers": 1
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "구미시",
+      "customers": 505
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "김천시",
+      "customers": 91
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "문경시",
+      "customers": 16
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "봉화군",
+      "customers": 6
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "상주시",
+      "customers": 23
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "성주군",
+      "customers": 4
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "안동시",
+      "customers": 61
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "영덕군",
+      "customers": 6
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "영주시",
+      "customers": 29
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "영천시",
+      "customers": 46
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "예천군",
+      "customers": 34
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "울진군",
+      "customers": 6
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "의성군",
+      "customers": 2
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "청도군",
+      "customers": 4
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "칠곡군",
+      "customers": 30
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "포항시 남구",
+      "customers": 351
+    },
+    {
+      "sido": "경상북도",
+      "sigungu": "포항시 북구",
+      "customers": 210
+    },
+    {
+      "sido": "광주광역시",
+      "sigungu": "광산구",
+      "customers": 510
+    },
+    {
+      "sido": "광주광역시",
+      "sigungu": "남구",
+      "customers": 397
+    },
+    {
+      "sido": "광주광역시",
+      "sigungu": "동구",
+      "customers": 152
+    },
+    {
+      "sido": "광주광역시",
+      "sigungu": "북구",
+      "customers": 343
+    },
+    {
+      "sido": "광주광역시",
+      "sigungu": "서구",
+      "customers": 333
+    },
+    {
+      "sido": "대구광역시",
+      "sigungu": "남구",
+      "customers": 40
+    },
+    {
+      "sido": "대구광역시",
+      "sigungu": "달서구",
+      "customers": 443
+    },
+    {
+      "sido": "대구광역시",
+      "sigungu": "달성군",
+      "customers": 198
+    },
+    {
+      "sido": "대구광역시",
+      "sigungu": "동구",
+      "customers": 181
+    },
+    {
+      "sido": "대구광역시",
+      "sigungu": "북구",
+      "customers": 293
+    },
+    {
+      "sido": "대구광역시",
+      "sigungu": "서구",
+      "customers": 51
+    },
+    {
+      "sido": "대구광역시",
+      "sigungu": "수성구",
+      "customers": 693
+    },
+    {
+      "sido": "대구광역시",
+      "sigungu": "중구",
+      "customers": 138
+    },
+    {
+      "sido": "대전광역시",
+      "sigungu": "대덕구",
+      "customers": 96
+    },
+    {
+      "sido": "대전광역시",
+      "sigungu": "동구",
+      "customers": 134
+    },
+    {
+      "sido": "대전광역시",
+      "sigungu": "서구",
+      "customers": 484
+    },
+    {
+      "sido": "대전광역시",
+      "sigungu": "유성구",
+      "customers": 563
+    },
+    {
+      "sido": "대전광역시",
+      "sigungu": "중구",
+      "customers": 159
+    },
+    {
+      "sido": "부산광역시",
+      "sigungu": "강서구",
+      "customers": 140
+    },
+    {
+      "sido": "부산광역시",
+      "sigungu": "금정구",
+      "customers": 160
+    },
+    {
+      "sido": "부산광역시",
+      "sigungu": "기장군",
+      "customers": 134
+    },
+    {
+      "sido": "부산광역시",
+      "sigungu": "남구",
+      "customers": 269
+    },
+    {
+      "sido": "부산광역시",
+      "sigungu": "동구",
+      "customers": 39
+    },
+    {
+      "sido": "부산광역시",
+      "sigungu": "동래구",
+      "customers": 294
+    },
+    {
+      "sido": "부산광역시",
+      "sigungu": "부산진구",
+      "customers": 273
+    },
+    {
+      "sido": "부산광역시",
+      "sigungu": "북구",
+      "customers": 219
+    },
+    {
+      "sido": "부산광역시",
+      "sigungu": "사상구",
+      "customers": 121
+    },
+    {
+      "sido": "부산광역시",
+      "sigungu": "사하구",
+      "customers": 173
+    },
+    {
+      "sido": "부산광역시",
+      "sigungu": "서구",
+      "customers": 56
+    },
+    {
+      "sido": "부산광역시",
+      "sigungu": "수영구",
+      "customers": 243
+    },
+    {
+      "sido": "부산광역시",
+      "sigungu": "연제구",
+      "customers": 252
+    },
+    {
+      "sido": "부산광역시",
+      "sigungu": "영도구",
+      "customers": 42
+    },
+    {
+      "sido": "부산광역시",
+      "sigungu": "중구",
+      "customers": 9
+    },
+    {
+      "sido": "부산광역시",
+      "sigungu": "해운대구",
+      "customers": 458
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "강남구",
+      "customers": 89
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "강동구",
+      "customers": 189
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "강북구",
+      "customers": 143
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "강서구",
+      "customers": 287
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "관악구",
+      "customers": 141
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "광진구",
+      "customers": 59
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "구로구",
+      "customers": 384
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "금천구",
+      "customers": 126
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "노원구",
+      "customers": 535
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "도봉구",
+      "customers": 274
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "동대문구",
+      "customers": 208
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "동작구",
+      "customers": 117
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "마포구",
+      "customers": 96
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "서대문구",
+      "customers": 135
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "서초구",
+      "customers": 58
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "성동구",
+      "customers": 74
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "성북구",
+      "customers": 243
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "송파구",
+      "customers": 134
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "양천구",
+      "customers": 165
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "영등포구",
+      "customers": 208
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "용산구",
+      "customers": 28
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "은평구",
+      "customers": 194
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "종로구",
+      "customers": 32
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "중구",
+      "customers": 71
+    },
+    {
+      "sido": "서울특별시",
+      "sigungu": "중랑구",
+      "customers": 232
+    },
+    {
+      "sido": "세종특별자치시",
+      "sigungu": "세종시 전체",
+      "customers": 424
+    },
+    {
+      "sido": "울산광역시",
+      "sigungu": "남구",
+      "customers": 585
+    },
+    {
+      "sido": "울산광역시",
+      "sigungu": "동구",
+      "customers": 93
+    },
+    {
+      "sido": "울산광역시",
+      "sigungu": "북구",
+      "customers": 208
+    },
+    {
+      "sido": "울산광역시",
+      "sigungu": "울주군",
+      "customers": 155
+    },
+    {
+      "sido": "울산광역시",
+      "sigungu": "중구",
+      "customers": 175
+    },
+    {
+      "sido": "인천광역시",
+      "sigungu": "강화군",
+      "customers": 8
+    },
+    {
+      "sido": "인천광역시",
+      "sigungu": "검단구",
+      "customers": 67
+    },
+    {
+      "sido": "인천광역시",
+      "sigungu": "계양구",
+      "customers": 176
+    },
+    {
+      "sido": "인천광역시",
+      "sigungu": "남동구",
+      "customers": 341
+    },
+    {
+      "sido": "인천광역시",
+      "sigungu": "동구",
+      "customers": 32
+    },
+    {
+      "sido": "인천광역시",
+      "sigungu": "미추홀구",
+      "customers": 209
+    },
+    {
+      "sido": "인천광역시",
+      "sigungu": "부평구",
+      "customers": 337
+    },
+    {
+      "sido": "인천광역시",
+      "sigungu": "서구",
+      "customers": 376
+    },
+    {
+      "sido": "인천광역시",
+      "sigungu": "서해구",
+      "customers": 95
+    },
+    {
+      "sido": "인천광역시",
+      "sigungu": "연수구",
+      "customers": 806
+    },
+    {
+      "sido": "인천광역시",
+      "sigungu": "영종구",
+      "customers": 17
+    },
+    {
+      "sido": "인천광역시",
+      "sigungu": "제물포구",
+      "customers": 12
+    },
+    {
+      "sido": "인천광역시",
+      "sigungu": "중구",
+      "customers": 71
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "강진군",
+      "customers": 5
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "고흥군",
+      "customers": 6
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "곡성군",
+      "customers": 3
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "광양시",
+      "customers": 68
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "구례군",
+      "customers": 1
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "나주시",
+      "customers": 116
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "담양군",
+      "customers": 7
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "목포시",
+      "customers": 158
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "무안군",
+      "customers": 146
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "보성군",
+      "customers": 1
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "순천시",
+      "customers": 445
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "신안군",
+      "customers": 1
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "여수시",
+      "customers": 303
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "영광군",
+      "customers": 6
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "영암군",
+      "customers": 1
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "완도군",
+      "customers": 5
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "장성군",
+      "customers": 2
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "장흥군",
+      "customers": 8
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "진도군",
+      "customers": 2
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "함평군",
+      "customers": 1
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "해남군",
+      "customers": 17
+    },
+    {
+      "sido": "전라남도",
+      "sigungu": "화순군",
+      "customers": 17
+    },
+    {
+      "sido": "전북특별자치도",
+      "sigungu": "고창군",
+      "customers": 9
+    },
+    {
+      "sido": "전북특별자치도",
+      "sigungu": "군산시",
+      "customers": 161
+    },
+    {
+      "sido": "전북특별자치도",
+      "sigungu": "김제시",
+      "customers": 15
+    },
+    {
+      "sido": "전북특별자치도",
+      "sigungu": "남원시",
+      "customers": 12
+    },
+    {
+      "sido": "전북특별자치도",
+      "sigungu": "무주군",
+      "customers": 7
+    },
+    {
+      "sido": "전북특별자치도",
+      "sigungu": "부안군",
+      "customers": 5
+    },
+    {
+      "sido": "전북특별자치도",
+      "sigungu": "순창군",
+      "customers": 2
+    },
+    {
+      "sido": "전북특별자치도",
+      "sigungu": "완주군",
+      "customers": 43
+    },
+    {
+      "sido": "전북특별자치도",
+      "sigungu": "익산시",
+      "customers": 127
+    },
+    {
+      "sido": "전북특별자치도",
+      "sigungu": "임실군",
+      "customers": 4
+    },
+    {
+      "sido": "전북특별자치도",
+      "sigungu": "전주시 덕진구",
+      "customers": 845
+    },
+    {
+      "sido": "전북특별자치도",
+      "sigungu": "전주시 완산구",
+      "customers": 559
+    },
+    {
+      "sido": "전북특별자치도",
+      "sigungu": "정읍시",
+      "customers": 39
+    },
+    {
+      "sido": "제주특별자치도",
+      "sigungu": "서귀포시",
+      "customers": 59
+    },
+    {
+      "sido": "제주특별자치도",
+      "sigungu": "제주시",
+      "customers": 185
+    },
+    {
+      "sido": "충청남도",
+      "sigungu": "계룡시",
+      "customers": 33
+    },
+    {
+      "sido": "충청남도",
+      "sigungu": "공주시",
+      "customers": 26
+    },
+    {
+      "sido": "충청남도",
+      "sigungu": "금산군",
+      "customers": 5
+    },
+    {
+      "sido": "충청남도",
+      "sigungu": "논산시",
+      "customers": 21
+    },
+    {
+      "sido": "충청남도",
+      "sigungu": "당진시",
+      "customers": 93
+    },
+    {
+      "sido": "충청남도",
+      "sigungu": "보령시",
+      "customers": 35
+    },
+    {
+      "sido": "충청남도",
+      "sigungu": "부여군",
+      "customers": 8
+    },
+    {
+      "sido": "충청남도",
+      "sigungu": "서산시",
+      "customers": 120
+    },
+    {
+      "sido": "충청남도",
+      "sigungu": "서천군",
+      "customers": 8
+    },
+    {
+      "sido": "충청남도",
+      "sigungu": "아산시",
+      "customers": 449
+    },
+    {
+      "sido": "충청남도",
+      "sigungu": "예산군",
+      "customers": 17
+    },
+    {
+      "sido": "충청남도",
+      "sigungu": "천안시 동남구",
+      "customers": 199
+    },
+    {
+      "sido": "충청남도",
+      "sigungu": "천안시 서북구",
+      "customers": 1316
+    },
+    {
+      "sido": "충청남도",
+      "sigungu": "청양군",
+      "customers": 1
+    },
+    {
+      "sido": "충청남도",
+      "sigungu": "태안군",
+      "customers": 12
+    },
+    {
+      "sido": "충청남도",
+      "sigungu": "홍성군",
+      "customers": 26
+    },
+    {
+      "sido": "충청북도",
+      "sigungu": "괴산군",
+      "customers": 2
+    },
+    {
+      "sido": "충청북도",
+      "sigungu": "단양군",
+      "customers": 3
+    },
+    {
+      "sido": "충청북도",
+      "sigungu": "보은군",
+      "customers": 8
+    },
+    {
+      "sido": "충청북도",
+      "sigungu": "영동군",
+      "customers": 6
+    },
+    {
+      "sido": "충청북도",
+      "sigungu": "옥천군",
+      "customers": 10
+    },
+    {
+      "sido": "충청북도",
+      "sigungu": "음성군",
+      "customers": 45
+    },
+    {
+      "sido": "충청북도",
+      "sigungu": "제천시",
+      "customers": 58
+    },
+    {
+      "sido": "충청북도",
+      "sigungu": "증평군",
+      "customers": 19
+    },
+    {
+      "sido": "충청북도",
+      "sigungu": "진천군",
+      "customers": 32
+    },
+    {
+      "sido": "충청북도",
+      "sigungu": "청주시 상당구",
+      "customers": 180
+    },
+    {
+      "sido": "충청북도",
+      "sigungu": "청주시 서원구",
+      "customers": 173
+    },
+    {
+      "sido": "충청북도",
+      "sigungu": "청주시 청원구",
+      "customers": 183
+    },
+    {
+      "sido": "충청북도",
+      "sigungu": "청주시 흥덕구",
+      "customers": 941
+    },
+    {
+      "sido": "충청북도",
+      "sigungu": "충주시",
+      "customers": 139
+    }
+  ],
+  "loan_types": {
+    "MORTGAGE": 30305,
+    "CREDIT_LINE": 16060,
+    "PERSONAL": 6481
+  },
+  "purchase_years": {
+    "2018": 1080,
+    "2019": 4490,
+    "2020": 4748,
+    "2021": 5306,
+    "2022": 4777,
+    "2023": 5327,
+    "2024": 5474,
+    "2025": 5932,
+    "2026": 5091
+  },
+  "mortgage_rate_median": 4.415,
+  "purchase_price_median": 451000000.0,
+  "financial_assets_median": 76207789.34
+}

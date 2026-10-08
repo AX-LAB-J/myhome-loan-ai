@@ -1,0 +1,12 @@
+{
+  "customers": 42225,
+  "customer_details": 42225,
+  "financial_health_customers": 80000,
+  "real_estate_details": 42225,
+  "loans": 52846,
+  "unique_reference_trades": 33872,
+  "complexes": 14702,
+  "original": 8935863607629.291,
+  "balance": 8202819560972.699,
+  "model_retrained": false
+}

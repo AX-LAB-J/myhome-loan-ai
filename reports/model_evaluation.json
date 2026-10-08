@@ -1,0 +1,377 @@
+{
+  "selected": {
+    "combo": "boosting",
+    "mort_ltv": "boosting",
+    "cl_ratio": "boosting"
+  },
+  "features": [
+    "age_at_purchase",
+    "log_income",
+    "log_assets",
+    "log_consumption",
+    "log_price",
+    "exclusive_area_m2",
+    "purchase_year",
+    "pre_dsr",
+    "sido"
+  ],
+  "rows": 26400,
+  "results": [
+    {
+      "split": "selection_2025",
+      "target": "combo",
+      "model": "baseline",
+      "train_n": 15401,
+      "test_n": 5912,
+      "log_loss": 1.079506941230806,
+      "accuracy": 0.412212449255751,
+      "macro_f1": 0.19459416297360962,
+      "brier": 0.6542090867491532
+    },
+    {
+      "split": "selection_2025",
+      "target": "combo",
+      "model": "knn",
+      "train_n": 15401,
+      "test_n": 5912,
+      "log_loss": 0.9814721585497986,
+      "accuracy": 0.5164073071718539,
+      "macro_f1": 0.49681518700980815,
+      "brier": 0.5917152910179978
+    },
+    {
+      "split": "selection_2025",
+      "target": "combo",
+      "model": "boosting",
+      "train_n": 15401,
+      "test_n": 5912,
+      "log_loss": 0.981907107180109,
+      "accuracy": 0.5079499323410014,
+      "macro_f1": 0.4875725658084696,
+      "brier": 0.5924136204576289
+    },
+    {
+      "split": "selection_2025",
+      "target": "mort_ltv",
+      "model": "baseline",
+      "train_n": 11147,
+      "test_n": 4477,
+      "mae": 0.12235523039253264,
+      "r2": -0.02752561468367043
+    },
+    {
+      "split": "selection_2025",
+      "target": "mort_ltv",
+      "model": "knn",
+      "train_n": 11147,
+      "test_n": 4477,
+      "mae": 0.06404579236886213,
+      "r2": 0.7138675790870292
+    },
+    {
+      "split": "selection_2025",
+      "target": "mort_ltv",
+      "model": "boosting",
+      "train_n": 11147,
+      "test_n": 4477,
+      "mae": 0.060187633701377224,
+      "r2": 0.7379158173507381
+    },
+    {
+      "split": "selection_2025",
+      "target": "cl_ratio",
+      "model": "baseline",
+      "train_n": 5865,
+      "test_n": 2437,
+      "mae": 0.01920012965528157,
+      "r2": -0.0036793992349972715
+    },
+    {
+      "split": "selection_2025",
+      "target": "cl_ratio",
+      "model": "knn",
+      "train_n": 5865,
+      "test_n": 2437,
+      "mae": 0.01840452167206624,
+      "r2": 0.06915355407687762
+    },
+    {
+      "split": "selection_2025",
+      "target": "cl_ratio",
+      "model": "boosting",
+      "train_n": 5865,
+      "test_n": 2437,
+      "mae": 0.01808546876832038,
+      "r2": 0.08269776214493396
+    },
+    {
+      "split": "heldout_2026",
+      "target": "combo",
+      "model": "baseline",
+      "train_n": 21313,
+      "test_n": 5087,
+      "log_loss": 1.0781919939748987,
+      "accuracy": 0.4163554157656772,
+      "macro_f1": 0.19597501734906317,
+      "brier": 0.6533086673615845
+    },
+    {
+      "split": "heldout_2026",
+      "target": "combo",
+      "model": "knn",
+      "train_n": 21313,
+      "test_n": 5087,
+      "log_loss": 0.9670834614952756,
+      "accuracy": 0.5166109691370159,
+      "macro_f1": 0.49628807190994534,
+      "brier": 0.5840816198152152
+    },
+    {
+      "split": "heldout_2026",
+      "target": "combo",
+      "model": "boosting",
+      "train_n": 21313,
+      "test_n": 5087,
+      "log_loss": 0.9600826795573058,
+      "accuracy": 0.5229015136622764,
+      "macro_f1": 0.49828929552732876,
+      "brier": 0.5793569897875518
+    },
+    {
+      "split": "heldout_2026",
+      "target": "mort_ltv",
+      "model": "baseline",
+      "train_n": 15624,
+      "test_n": 3836,
+      "mae": 0.12185918515028879,
+      "r2": -0.03751772179828827
+    },
+    {
+      "split": "heldout_2026",
+      "target": "mort_ltv",
+      "model": "knn",
+      "train_n": 15624,
+      "test_n": 3836,
+      "mae": 0.06515345873453839,
+      "r2": 0.6809565094958081
+    },
+    {
+      "split": "heldout_2026",
+      "target": "mort_ltv",
+      "model": "boosting",
+      "train_n": 15624,
+      "test_n": 3836,
+      "mae": 0.06034985506512349,
+      "r2": 0.7152751545035121
+    },
+    {
+      "split": "heldout_2026",
+      "target": "cl_ratio",
+      "model": "baseline",
+      "train_n": 8302,
+      "test_n": 2118,
+      "mae": 0.019225154058609126,
+      "r2": -9.282035465862926e-05
+    },
+    {
+      "split": "heldout_2026",
+      "target": "cl_ratio",
+      "model": "knn",
+      "train_n": 8302,
+      "test_n": 2118,
+      "mae": 0.018762299408233832,
+      "r2": 0.03792185633176959
+    },
+    {
+      "split": "heldout_2026",
+      "target": "cl_ratio",
+      "model": "boosting",
+      "train_n": 8302,
+      "test_n": 2118,
+      "mae": 0.018578633446080153,
+      "r2": 0.05276974122505995
+    },
+    {
+      "split": "random_80_20",
+      "target": "combo",
+      "model": "baseline",
+      "train_n": 21120,
+      "test_n": 5280,
+      "log_loss": 1.0851250340052403,
+      "accuracy": 0.3946969696969697,
+      "macro_f1": 0.18866558030056127,
+      "brier": 0.6578546831955923
+    },
+    {
+      "split": "random_80_20",
+      "target": "combo",
+      "model": "knn",
+      "train_n": 21120,
+      "test_n": 5280,
+      "log_loss": 0.9673321687438933,
+      "accuracy": 0.5189393939393939,
+      "macro_f1": 0.49654700731564266,
+      "brier": 0.5828854166991669
+    },
+    {
+      "split": "random_80_20",
+      "target": "combo",
+      "model": "boosting",
+      "train_n": 21120,
+      "test_n": 5280,
+      "log_loss": 0.9604231519451281,
+      "accuracy": 0.5320075757575757,
+      "macro_f1": 0.5104736200699116,
+      "brier": 0.5780247132352452
+    },
+    {
+      "split": "random_80_20",
+      "target": "mort_ltv",
+      "model": "baseline",
+      "train_n": 15568,
+      "test_n": 3892,
+      "mae": 0.1262185254928273,
+      "r2": -0.037980565817202105
+    },
+    {
+      "split": "random_80_20",
+      "target": "mort_ltv",
+      "model": "knn",
+      "train_n": 15568,
+      "test_n": 3892,
+      "mae": 0.06179008014970478,
+      "r2": 0.7363532717274419
+    },
+    {
+      "split": "random_80_20",
+      "target": "mort_ltv",
+      "model": "boosting",
+      "train_n": 15568,
+      "test_n": 3892,
+      "mae": 0.05438406731461487,
+      "r2": 0.8008910502027109
+    },
+    {
+      "split": "random_80_20",
+      "target": "cl_ratio",
+      "model": "baseline",
+      "train_n": 8336,
+      "test_n": 2084,
+      "mae": 0.019244507639986717,
+      "r2": -0.00032307366967176954
+    },
+    {
+      "split": "random_80_20",
+      "target": "cl_ratio",
+      "model": "knn",
+      "train_n": 8336,
+      "test_n": 2084,
+      "mae": 0.018549985943532264,
+      "r2": 0.06794944239589973
+    },
+    {
+      "split": "random_80_20",
+      "target": "cl_ratio",
+      "model": "boosting",
+      "train_n": 8336,
+      "test_n": 2084,
+      "mae": 0.01829866104439893,
+      "r2": 0.09135434634966244
+    },
+    {
+      "split": "unseen_complexes",
+      "target": "combo",
+      "model": "baseline",
+      "train_n": 20743,
+      "test_n": 5657,
+      "log_loss": 1.082613021812384,
+      "accuracy": 0.3945554180661128,
+      "macro_f1": 0.18861706173152493,
+      "brier": 0.6563444536933603
+    },
+    {
+      "split": "unseen_complexes",
+      "target": "combo",
+      "model": "knn",
+      "train_n": 20743,
+      "test_n": 5657,
+      "log_loss": 0.9737526206330454,
+      "accuracy": 0.5156443344528903,
+      "macro_f1": 0.49047604651488125,
+      "brier": 0.5880346119851512
+    },
+    {
+      "split": "unseen_complexes",
+      "target": "combo",
+      "model": "boosting",
+      "train_n": 20743,
+      "test_n": 5657,
+      "log_loss": 0.9606328826999664,
+      "accuracy": 0.5243061693477108,
+      "macro_f1": 0.5032517050137232,
+      "brier": 0.5801004477149776
+    },
+    {
+      "split": "unseen_complexes",
+      "target": "mort_ltv",
+      "model": "baseline",
+      "train_n": 15231,
+      "test_n": 4229,
+      "mae": 0.12385305254219385,
+      "r2": -0.049139720220574334
+    },
+    {
+      "split": "unseen_complexes",
+      "target": "mort_ltv",
+      "model": "knn",
+      "train_n": 15231,
+      "test_n": 4229,
+      "mae": 0.061677305848943785,
+      "r2": 0.7282435275452919
+    },
+    {
+      "split": "unseen_complexes",
+      "target": "mort_ltv",
+      "model": "boosting",
+      "train_n": 15231,
+      "test_n": 4229,
+      "mae": 0.054198197367818335,
+      "r2": 0.7946251747926076
+    },
+    {
+      "split": "unseen_complexes",
+      "target": "cl_ratio",
+      "model": "baseline",
+      "train_n": 8188,
+      "test_n": 2232,
+      "mae": 0.01892070127434496,
+      "r2": -0.0010592538398612739
+    },
+    {
+      "split": "unseen_complexes",
+      "target": "cl_ratio",
+      "model": "knn",
+      "train_n": 8188,
+      "test_n": 2232,
+      "mae": 0.018604556501972756,
+      "r2": 0.03630489316046226
+    },
+    {
+      "split": "unseen_complexes",
+      "target": "cl_ratio",
+      "model": "boosting",
+      "train_n": 8188,
+      "test_n": 2232,
+      "mae": 0.01846356036629797,
+      "r2": 0.04415661536672444
+    }
+  ],
+  "selection_rule": "Attached 02_train.py specifies GBM for all targets; 2025 and 2026 are validation only.",
+  "scope": "Synthetic buyer-pattern prediction only. Not approval, property valuation, or affordability ground truth.",
+  "limitations": [
+    "Current incomes/assets explain historical purchases; time split cannot eliminate this hindsight bias.",
+    "Only successful homeowners, so cannot estimate approval probability or outcomes for rejected applicants.",
+    "Apartment recommendation has no labeled relevance outcomes; use deterministic constraints, not claim validated recommendation accuracy.",
+    "Conditional ratio metrics assume the observed loan combination; do not interpret as end-to-end approval accuracy."
+  ]
+}

@@ -1,0 +1,23 @@
+# Allowlist: no credentials, local environments, raw data, models or test logs.
+**
+!Dockerfile
+!requirements.txt
+!housing_app/
+!housing_app/*.py
+!scripts/
+!scripts/__init__.py
+!scripts/check.py
+!reports/
+!reports/model_evaluation.json
+!reports/data_audit.json
+!frontend/
+!frontend/package.json
+!frontend/pnpm-lock.yaml
+!frontend/pnpm-workspace.yaml
+!frontend/index.html
+!frontend/tsconfig.json
+!frontend/vite.config.ts
+!frontend/src/
+!frontend/src/*.tsx
+!frontend/src/*.ts
+!frontend/src/*.css

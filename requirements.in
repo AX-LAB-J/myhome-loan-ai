@@ -1,0 +1,18 @@
+# Direct runtime dependencies. Regenerate requirements.txt with uv pip compile.
+# Keep numerical versions aligned with the existing serialized sklearn models.
+pandas==3.0.6
+numpy==2.5.3
+scikit-learn==1.9.1
+joblib==1.6.0
+fastapi==0.135.0
+uvicorn==0.54.0
+deepagents==0.7.19
+langgraph-checkpoint-sqlite==3.1.1
+langchain-openai==1.6.6
+langchain==1.4.3
+langchain-core==1.6.6
+langsmith==0.14.1
+pydantic==2.13.5
+pydantic-settings==2.15.0
+httpx==0.28.1
+threadpoolctl==3.7.0
