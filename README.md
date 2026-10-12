@@ -2,11 +2,11 @@
 
 **“내 재무 상황으로 얼마짜리 집까지 살 수 있을까?”**
 
-산화머니는 고객의 소득·금융자산·소비·기존 대출을 바탕으로 구매력을 계산하고, 예산에 맞는 주택 탐색부터 대출·월 상환 계획까지 연결하는 모바일 웹앱입니다. 학습 모델이 비슷한 구매자의 대출 비율을 예측하고, 계산 엔진이 매달 남는 돈과 상환 부담을 확인합니다. AI 채팅으로 원하는 지역과 조건을 말하면 조회·계산한 후보를 설명합니다.
+산화머니는 고객의 소득·금융자산·소비·기존 대출을 바탕으로 구매력을 계산하고, 예산에 맞는 주택 탐색부터 대출·월 상환 계획까지 연결하는 모바일 웹앱입니다. 학습 모델이 비슷한 구매자의 대출 비율을 예측하고, 계산 엔진이 매달 남는 돈과 상환 부담을 확인합니다. AI 채팅으로 원하는 지역을 말하면 현재 재무 조건으로 조회·계산한 후보를 설명합니다.
 
 AI CAMPUS 미니 프로젝트 · 팀 산'화'머니 · 최종 발표 2026.10.09
 
-[서비스 화면](#서비스-화면) · [구매력 계산과 AI](#구매력-계산과-ai) · [모델 검증](#모델-검증) · [실행 방법](#빠른-시작-windows) · [최종 발표자료 PDF](docs/presentation/service-introduction.pdf)
+[서비스 화면](#서비스-화면) · [구매력 계산과 AI](#구매력-계산과-ai) · [설계 구조](docs/architecture.md) · [실행 방법](#빠른-시작-windows) · [발표자료 PDF](docs/presentation/service-introduction.pdf)
 
 ![재무 정보로 예산을 계산하고, 구매력을 4구간으로 나누며, 비슷한 구매자의 대출 패턴을 예측하는 서비스 소개](docs/images/service/service-overview.png)
 
@@ -53,14 +53,14 @@ AI 채팅에서는 “서대문구에서 내가 구매할 만한 주택 3개 추
 
 ## 구매력 계산과 AI
 
-![재무 입력에서 규칙 엔진·GBM 대출 예측·LLM 조건 변경으로 이어지는 계산 구조](docs/images/service/calculation-and-ai.png)
+![재무 입력에서 규칙 엔진·GBM 대출 예측·LLM 대화로 이어지는 계산 구조](docs/images/service/calculation-and-ai.png)
 
 | 구성 | 역할 |
 |---|---|
 | 재무 정보 | 소득·계좌·소비·기존 대출을 고객 ID로 연결해 계산에 반영 |
 | 대출 예측 모델 (GBM) | 비슷한 구매자의 주택담보대출·한도대출 비율 예측 |
 | 계산 엔진 | 필요한 자금, 대출 상환액, 월 잔여금과 DSR을 계산해 구매력 판정 |
-| 대화 AI (LLM) | 자연어 요청에 따라 도구로 조건을 변경·조회하고 계산 결과 설명 |
+| 대화 AI (LLM) | 자연어 요청에 따라 도구로 지역을 변경·조회하고 계산 결과 설명 |
 | 네이버 지도 | 주소 좌표 조회, 단지 위치 표시, 같은 위치의 단지 그룹 표시 |
 
 구매력은 아래 네 구간으로 표시합니다. 기준은 기본 설정이며, 금리·만기·목표 여유자금 등을 바꾸면 가격 경계도 다시 계산됩니다.
@@ -73,19 +73,6 @@ AI 채팅에서는 “서대문구에서 내가 구매할 만한 주택 3개 추
 | 범위 밖 | 한계권 시나리오의 자금·월 잔여금 기준을 넘는 가격 |
 
 DSR은 연간 원리금 상환액을 연소득으로 나눈 비율입니다. **AI 예상 대출은 비슷한 구매자의 대출 패턴 예측값**이고, 단지 자금 계획은 **그 집에 필요한 만큼만 빌리는 계산값**이므로 두 금액은 다를 수 있습니다. 채팅 카드의 금액도 계산 엔진에서 가져옵니다.
-
-## 모델 검증
-
-최종 발표자료에 정리된 GBM 검증 결과입니다. 전체 고객 약 8만 명 중 주택 구매 연결 사례 42,225건을 정리하고, 2022년 이후 구매 사례 약 2.6만 건을 모델링에 사용했습니다. 검증 데이터는 무작위 20%인 5,280건입니다.
-
-| 지표 | 전체 중앙값 기준선 | GBM |
-|---|---:|---:|
-| 주담대 비율 평균 오차 | 12.6%p | **5.4%p** |
-| 총대출 금액 평균 오차 | 6,922만 원 | **3,505만 원** |
-| 대출 조합 정확도 | 39.5% | **53.2%** |
-| DSR 판정 일치율 | 89.4% | **91.5%** |
-
-교육용 가상 금융 DB에서 생성 규칙을 재현한 결과이며 실제 금융 고객에 대한 예측 정확도를 뜻하지 않습니다. 모델 비교와 검증 조건은 [발표자료](docs/presentation/service-introduction.pdf)의 부록 A4에 있습니다.
 
 ## 구현 범위와 다음 단계
 
@@ -101,6 +88,8 @@ DSR은 연간 원리금 상환액을 연소득으로 나눈 비율입니다. **A
 
 ## 빠른 시작 (Windows)
 
+Python 3.12, Node.js 24, pnpm 11을 사용합니다. **저장소에는 CSV·DB·학습 모델이 포함되어 있지 않으므로, 앱 실행 전에 [데이터와 모델 준비](docs/data-setup.md)가 필요합니다.** 소스 코드만 clone하면 고객 조회와 예측을 바로 실행할 수 없습니다.
+
 ```bat
 cd /d C:\project_side
 setup.cmd dev
@@ -108,7 +97,7 @@ cd frontend && pnpm install --frozen-lockfile && pnpm build && cd ..
 start.cmd
 ```
 
-http://127.0.0.1:8501 에서 확인합니다. Python 가상환경 이름은 `side`이고, Node.js 24와 pnpm 11이 필요합니다. 처음 설치하는 PC라면 `.env.example`을 `.env`로 복사해 키를 넣습니다. 기존 `.env`는 덮어쓰지 마세요.
+http://127.0.0.1:8501 에서 확인합니다. Python 가상환경 이름은 `side`입니다. 처음 설치하는 PC라면 `.env.example`을 `.env`로 복사해 키를 넣습니다. 기존 `.env`는 덮어쓰지 마세요.
 
 ## 설정 (`.env`)
 
@@ -140,9 +129,8 @@ project_side/
 ├── scripts/                  # 데이터 감사·DB 생성·학습·실행 전 점검(check)
 ├── tests/                    # pytest (`data` 표시 테스트는 비공개 데이터 필요)
 ├── deploy/                   # AWS용 compose·Caddy·EC2 설치·ECR 업로드 스크립트
-├── docs/                     # 배포, 모바일, 구현 기록(implementation/), 이전 기록(history/)
+├── docs/                     # 서비스 화면·설계·데이터 준비·배포·발표자료
 ├── data/, models/            # 비공개 DB·CSV·모델 (Git·이미지 제외)
-├── archive/                  # 이전 Streamlit·React 코드, 미사용 CSV 등 (Git 제외)
 └── Dockerfile, compose.yaml, requirements*.in/txt, .github/workflows/ci.yml
 ```
 
@@ -152,7 +140,7 @@ project_side/
 2. 서버가 현재 조건으로 후보 단지를 계산한 뒤, 에이전트가 도구(`get_buyer_constraints`, `get_candidate_list`, `get_candidate_details`, `search_homes_in_district`)로 이를 읽고 구조화된 답(`ChatAnswer`)을 돌려줍니다.
 3. 서버는 답에 나온 단지 ID가 이번 요청에서 조회한 후보인지 검증하고, 화면 카드의 금액은 계산기 값을 붙입니다.
 
-비용·속도 최적화: 짧은 고정 시스템 프롬프트(OpenAI 프롬프트 캐시 활용), 필요한 필드만 담은 도구 결과, 이전 턴은 질문·답 텍스트만 재전송, OpenAI 클라이언트 재사용, 동시 실행 제한, 대화별 토큰 사용량 로그. 같은 질문 기준으로 모델에 보내는 양이 이전 deepagents 구성보다 약 77% 줄었습니다.
+대화는 LangGraph의 SQLite 체크포인트로 이어집니다. 이전 문맥은 질문·답 텍스트 중심으로 전달하고, 후보와 재무 조건은 매 요청에서 다시 조회합니다. 자세한 동작은 [채팅 메모리](docs/implementation/chat-memory.md)에 정리했습니다.
 
 ## 데이터 준비·검증
 
@@ -176,5 +164,7 @@ CSV를 바꿀 때는 `data/raw/`에 넣고 앱을 끈 뒤 실행합니다. 학�
 
 - [배포 안내 (GitHub · Docker · AWS)](docs/deployment.md)
 - [모바일 화면 구조와 접속](docs/mobile.md)
-- [채팅 메모리](docs/implementation/chat-memory.md), [데이터 매핑](docs/implementation/data-mapping.md), [검수 기록](docs/implementation/validation.md)
-- 화면 기획 원본: `mydata-ui-handoff/`
+- [설계 구조](docs/architecture.md)
+- [데이터와 모델 준비](docs/data-setup.md)
+- [채팅 메모리](docs/implementation/chat-memory.md), [화면 데이터 매핑](docs/implementation/data-mapping.md)
+- [화면 기획 Figma](https://www.figma.com/design/bj6Q99sd5GYQ0Yi4jlmoOE/?node-id=1-4)
